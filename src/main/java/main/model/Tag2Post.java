@@ -1,19 +1,26 @@
 package main.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+
+import javax.persistence.*;
 
 @Entity
+@Table(name = "tag2post")
 public class Tag2Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotNull
     private int id;
 
-    private Post postId;
-    private Tag tagId;
+    @Column(name = "post_id")
+    @NotNull
+    private int postId;
+
+    @Column(name = "tag_id")
+    @NotNull
+    private int tagId;
 
     public int getId() {
         return id;
@@ -23,19 +30,19 @@ public class Tag2Post {
         this.id = id;
     }
 
-    public Post getPostId() {
+    public int getPostId() {
         return postId;
     }
 
-    public void setPostId(Post postId) {
+    public void setPostId(int postId) {
         this.postId = postId;
     }
 
-    public Tag getTagId() {
+    public int getTagId() {
         return tagId;
     }
 
-    public void setTagId(Tag tagId) {
+    public void setTagId(int tagId) {
         this.tagId = tagId;
     }
 }

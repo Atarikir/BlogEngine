@@ -1,16 +1,28 @@
 package main.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
+@Table(name = "global_settings")
 public class GlobalSetting {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "code")
+    @NotNull
+    private String code;
+
+    @Column(name = "name")
+    @NotNull
+    private String name;
+
+    @Column(name = "value")
+    @NotNull
+    private String value;
 
     public int getId() {
         return id;
@@ -43,8 +55,4 @@ public class GlobalSetting {
     public void setValue(String value) {
         this.value = value;
     }
-
-    private String code;
-    private String name;
-    private String value;
 }

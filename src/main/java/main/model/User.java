@@ -1,24 +1,54 @@
 package main.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 @Entity
+@Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotNull
     private int id;
+
+    @Column(name = "is_moderator")
+    @NotNull
     private boolean isModerator;
+
+    @Column(name = "reg_time")
+    @NotNull
     private Date regTime;
+
+    @Column(name = "name")
+    @NotNull
     private String name;
+
+    @Column(name = "email")
+    @NotNull
     private String email;
+
+    @Column(name = "password")
+    @NotNull
     private String password;
+
+    @Column(name = "code")
     private String code;
+
+    @Column(name = "photo")
     private String photo;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<PostComment> postComments;
+
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    private List<PostVote> postVotes;
 
     public int getId() {
         return id;
@@ -82,5 +112,29 @@ public class User {
 
     public void setPhoto(String photo) {
         this.photo = photo;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    public List<PostComment> getPostComments() {
+        return postComments;
+    }
+
+    public void setPostComments(List<PostComment> postComments) {
+        this.postComments = postComments;
+    }
+
+    public List<PostVote> getPostVotes() {
+        return postVotes;
+    }
+
+    public void setPostVotes(List<PostVote> postVotes) {
+        this.postVotes = postVotes;
     }
 }

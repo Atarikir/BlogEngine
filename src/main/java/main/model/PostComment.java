@@ -1,26 +1,43 @@
 package main.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 @Entity
+@Table(name = "post_comments")
 public class PostComment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotNull
     private int id;
 
-    private int parentId;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "parent_id")
+    private PostComment parentId;
 
-    private Post postId;
+    @OneToMany(mappedBy = "parentId", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<PostComment> postComments;
 
-    private User userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "post_id")
+    @NotNull
+    private Post post;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    @NotNull
+    private User user;
+
+    @Column(name = "time")
+    @NotNull
     private Date time;
 
+    @Column(name = "text")
+    @NotNull
     private String text;
 
     public int getId() {
@@ -31,28 +48,28 @@ public class PostComment {
         this.id = id;
     }
 
-    public int getParentId() {
+    public PostComment getParentId() {
         return parentId;
     }
 
-    public void setParentId(int parentId) {
+    public void setParentId(PostComment parentId) {
         this.parentId = parentId;
     }
 
-    public Post getPostId() {
-        return postId;
+    public Post getPost() {
+        return post;
     }
 
-    public void setPostId(Post postId) {
-        this.postId = postId;
+    public void setPost(Post post) {
+        this.post = post;
     }
 
-    public User getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(User userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Date getTime() {
@@ -69,5 +86,13 @@ public class PostComment {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public List<PostComment> getPostComments() {
+        return postComments;
+    }
+
+    public void setPostComments(List<PostComment> postComments) {
+        this.postComments = postComments;
     }
 }
