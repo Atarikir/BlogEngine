@@ -17,7 +17,7 @@ public class Post {
     @NotNull
     private int id;
 
-    @Column(name = "is_active")
+    @Column(name = "is_active", columnDefinition = "TINYINT")
     @NotNull
     private boolean isActive;
 
@@ -41,7 +41,7 @@ public class Post {
     @NotNull
     private String title;
 
-    @Column(name = "text")
+    @Column(name = "text", columnDefinition = "TEXT")
     @NotNull
     private String text;
 

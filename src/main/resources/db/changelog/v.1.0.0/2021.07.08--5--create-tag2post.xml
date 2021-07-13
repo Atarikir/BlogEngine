@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="10" author="dmitriy_kir">
+        <tagDatabase tag="create-tag2post"/>
+    </changeSet>
+
+    <changeSet id="11" author="dmitriy_kir">
+        <createTable tableName="tag2post" remarks="связи тэгов с постами">
+            <column name="id" type="int" autoIncrement="true" remarks="id связи">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="post_id" type="int" remarks="id поста">
+                <constraints nullable="false" foreignKeyName="fk_tag2post_posts" references="posts(id)"/>
+            </column>
+            <column name="tag_id" type="int" remarks="id тэга">
+                <constraints nullable="false" foreignKeyName="fk_tag2post_tags" references="tags(id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            drop table tag2post;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

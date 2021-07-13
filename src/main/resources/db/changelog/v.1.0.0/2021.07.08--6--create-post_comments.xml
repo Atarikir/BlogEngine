@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="12" author="dmitriy_kir">
+        <tagDatabase tag="create-post_comments"/>
+    </changeSet>
+
+    <changeSet id="13" author="dmitriy_kir">
+        <createTable tableName="post_comments" remarks="комментарии к постам">
+            <column name="id" type="int" autoIncrement="true" remarks="id комментария">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="parent_id" type="int" remarks="комментарий, на который оставлен этот комментарий
+            (может быть NULL, если комментарий оставлен просто к посту)">
+                <constraints foreignKeyName="fk_post_comments_post_comments" references="post_comments(id)"/>
+            </column>
+            <column name="post_id" type="int" remarks="пост, к которому написан комментарий">
+                <constraints nullable="false" foreignKeyName="post_comments_posts" references="posts(id)"/>
+            </column>
+            <column name="user_id" type="int" remarks="автор комментария">
+                <constraints nullable="false" foreignKeyName="post_comments_users" references="users(id)"/>
+            </column>
+            <column name="time" type="datetime" remarks="дата и время комментария">
+                <constraints nullable="false"/>
+            </column>
+            <column name="text" type="text" remarks="текст комментария">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            drop table post_comments;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

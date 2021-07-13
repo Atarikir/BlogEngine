@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="6" author="dmitriy_kir">
+        <tagDatabase tag="create-post_votes"/>
+    </changeSet>
+
+    <changeSet id="7" author="dmitriy_kir">
+        <createTable tableName="post_votes" remarks="лайки и дизлайки постов">
+            <column name="id" type="int" autoIncrement="true" remarks="id лайка/дизлайка">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="int" remarks="тот, кто поставил лайк / дизлайк">
+                <constraints nullable="false" foreignKeyName="fk_post_votes_users" references="users(id)"/>
+            </column>
+            <column name="post_id" type="int" remarks="пост, которому поставлен лайк / дизлайк">
+                <constraints nullable="false" foreignKeyName="fk_post_votes_posts" references="posts(id)"/>
+            </column>
+            <column name="time" type="datetime" remarks="дата и время лайка / дизлайка">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="tinyint" remarks="лайк или дизлайк: 1 или -1">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            drop table post_votes;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    
+    <changeSet id="4" author="dmitriy_kir">
+        <tagDatabase tag="create-posts"/>
+    </changeSet>
+
+    <changeSet id="5" author="dmitriy_kir">
+        <createTable tableName="posts" remarks="посты">
+            <column name="id" type="int" autoIncrement="true" remarks="id поста">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="is_active" type="tinyint" remarks="скрыта или активна публикация: 0 или 1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="moderation_status" type="varchar(255)" remarks="статус модерации, по умолчанию значение NEW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="moderator_id" type="int" remarks="ID пользователя-модератора, принявшего решение"/>
+            <column name="user_id" type="int" remarks="автор поста">
+                <constraints nullable="false" foreignKeyName="fk_posts_users" references="users(id)"/>
+            </column>
+            <column name="time" type="datetime" remarks="дата и время публикации поста">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)" remarks="заголовок поста">
+                <constraints nullable="false"/>
+            </column>
+            <column name="text" type="text" remarks="текст поста">
+                <constraints nullable="false"/>
+            </column>
+            <column name="view_count" type="int" remarks="количество просмотров поста">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            drop table posts;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

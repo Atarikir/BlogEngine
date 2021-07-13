@@ -15,7 +15,7 @@ public class User {
     @NotNull
     private int id;
 
-    @Column(name = "is_moderator")
+    @Column(name = "is_moderator", columnDefinition = "TINYINT")
     @NotNull
     private boolean isModerator;
 
@@ -38,7 +38,7 @@ public class User {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "photo")
+    @Column(name = "photo", columnDefinition = "TEXT")
     private String photo;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

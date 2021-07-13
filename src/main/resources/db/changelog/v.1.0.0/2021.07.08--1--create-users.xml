@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2" author="dmitriy_kir">
+        <tagDatabase tag="create-users"/>
+    </changeSet>
+
+    <changeSet id="3" author="dmitriy_kir">
+        <createTable tableName="users" remarks="пользователи">
+            <column name="id" type="int" autoIncrement="true" remarks="id пользователя">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="is_moderator" type="tinyint" remarks="является ли пользователь модератором
+            (может ли править глобальные настройки сайта и модерировать посты)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reg_time" type="datetime" remarks="дата и время регистрации пользователя">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)" remarks="имя пользователя">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)" remarks="e-mail пользователя">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="varchar(255)" remarks="хэш пароля пользователя">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(255)" remarks="код для восстановления пароля"/>
+            <column name="photo" type="text" remarks="фотография (ссылка на файл)"/>
+        </createTable>
+        <rollback>
+            drop table users;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

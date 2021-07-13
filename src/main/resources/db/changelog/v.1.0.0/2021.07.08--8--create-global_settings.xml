@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="16" author="dmitriy_kir">
+        <tagDatabase tag="create-global_settings"/>
+    </changeSet>
+
+    <changeSet id="17" author="dmitriy_kir">
+        <createTable tableName="global_settings" remarks="глобальные настройки движка">
+            <column name="id" type="int" autoIncrement="true" remarks="id настройки">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="varchar(255)" remarks="системное имя настройки">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)" remarks="название настройки">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="varchar(255)" remarks="значение настройки">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            drop table global_settings;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

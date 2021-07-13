@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="26" author="dmitriy_kir">
+        <tagDatabase tag="insert tag2post"/>
+    </changeSet>
+
+    <changeSet id="27" author="dmitriy_kir">
+        <insert tableName="tag2post">
+            <column name="id" value="1"/>
+            <column name="post_id" value="1"/>
+            <column name="tag_id" value="1"/>
+        </insert>
+
+        <insert tableName="tag2post">
+            <column name="id" value="2"/>
+            <column name="post_id" value="13"/>
+            <column name="tag_id" value="4"/>
+        </insert>
+
+        <insert tableName="tag2post">
+            <column name="id" value="3"/>
+            <column name="post_id" value="5"/>
+            <column name="tag_id" value="2"/>
+        </insert>
+
+        <insert tableName="tag2post">
+            <column name="id" value="4"/>
+            <column name="post_id" value="8"/>
+            <column name="tag_id" value="5"/>
+        </insert>
+
+        <insert tableName="tag2post">
+            <column name="id" value="5"/>
+            <column name="post_id" value="6"/>
+            <column name="tag_id" value="3"/>
+        </insert>
+
+        <insert tableName="tag2post">
+            <column name="id" value="6"/>
+            <column name="post_id" value="10"/>
+            <column name="tag_id" value="1"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

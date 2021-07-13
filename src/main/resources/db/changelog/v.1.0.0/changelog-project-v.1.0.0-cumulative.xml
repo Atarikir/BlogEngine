@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <include file="/2021.07.08--1--create-users.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--2--create-posts.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--3--create-post_votes.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--4--create-tags.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--5--create-tag2post.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--6--create-post_comments.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--7--create-captcha_codes.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.07.08--8--create-global_settings.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

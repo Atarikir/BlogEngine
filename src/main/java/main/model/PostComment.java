@@ -36,7 +36,7 @@ public class PostComment {
     @NotNull
     private Date time;
 
-    @Column(name = "text")
+    @Column(name = "text", columnDefinition = "TEXT")
     @NotNull
     private String text;
 

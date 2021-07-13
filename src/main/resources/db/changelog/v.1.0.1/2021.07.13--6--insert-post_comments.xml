@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="28" author="dmitriy_kir">
+        <tagDatabase tag="insert post_comments"/>
+    </changeSet>
+
+    <changeSet id="29" author="dmitriy_kir">
+        <insert tableName="post_comments">
+            <column name="id" value="1"/>
+            <column name="parent_id"/>
+            <column name="post_id" value="1"/>
+            <column name="user_id" value="3"/>
+            <column name="time" value="2021-07-13 19:55:29"/>
+            <column name="text" value="Текст комментария к посту 1"/>
+        </insert>
+
+        <insert tableName="post_comments">
+            <column name="id" value="2"/>
+            <column name="parent_id" value="1"/>
+            <column name="post_id" value="1"/>
+            <column name="user_id" value="1"/>
+            <column name="time" value="2021-07-13 19:58:39"/>
+            <column name="text" value="комментарий на текст комментария к посту 1"/>
+        </insert>
+
+        <insert tableName="post_comments">
+            <column name="id" value="3"/>
+            <column name="parent_id"/>
+            <column name="post_id" value="5"/>
+            <column name="user_id" value="3"/>
+            <column name="time" value="2021-07-13 20:00:56"/>
+            <column name="text" value="Текст комментария к посту 5"/>
+        </insert>
+
+        <insert tableName="post_comments">
+            <column name="id" value="4"/>
+            <column name="parent_id"/>
+            <column name="post_id" value="7"/>
+            <column name="user_id" value="2"/>
+            <column name="time" value="2021-07-13 20:02:35"/>
+            <column name="text" value="Текст комментария к посту 7"/>
+        </insert>
+
+        <insert tableName="post_comments">
+            <column name="id" value="5"/>
+            <column name="parent_id"/>
+            <column name="post_id" value="10"/>
+            <column name="user_id" value="1"/>
+            <column name="time" value="2021-07-13 20:03:29"/>
+            <column name="text" value="Текст комментария к посту 10"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
