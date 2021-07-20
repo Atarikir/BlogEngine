@@ -1,11 +1,15 @@
 package main.model;
 
-import javax.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "tag2post")
+@Data
+@NoArgsConstructor
 public class Tag2Post {
 
     @Id
@@ -21,28 +25,4 @@ public class Tag2Post {
     @Column(name = "tag_id")
     @NotNull
     private int tagId;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getPostId() {
-        return postId;
-    }
-
-    public void setPostId(int postId) {
-        this.postId = postId;
-    }
-
-    public int getTagId() {
-        return tagId;
-    }
-
-    public void setTagId(int tagId) {
-        this.tagId = tagId;
-    }
 }

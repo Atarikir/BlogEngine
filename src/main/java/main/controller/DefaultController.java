@@ -15,8 +15,7 @@ public class DefaultController {
     }
 
     @RequestMapping("/")
-    public String index(Model model){
-        System.out.println(initResponse.getTitle());
+    public String index(Model model) {
         return "index";
     }
 }
