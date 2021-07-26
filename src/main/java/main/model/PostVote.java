@@ -1,7 +1,6 @@
 package main.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,7 +9,6 @@ import java.util.Date;
 @Entity
 @Table(name = "post_votes")
 @Data
-@NoArgsConstructor
 public class PostVote {
 
     @Id

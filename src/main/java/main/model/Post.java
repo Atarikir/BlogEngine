@@ -1,7 +1,6 @@
 package main.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import main.model.enums.ModerationStatus;
 
 import javax.persistence.*;
@@ -12,7 +11,6 @@ import java.util.List;
 @Entity
 @Table(name = "posts")
 @Data
-@NoArgsConstructor
 public class Post {
 
     @Id

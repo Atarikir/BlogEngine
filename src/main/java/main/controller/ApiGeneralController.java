@@ -29,7 +29,8 @@ public class ApiGeneralController {
 
     @GetMapping("/tag")
     private ResponseEntity<TagResponse> tags() {
-        return new ResponseEntity<>(tagService.getTags(), HttpStatus.OK);
+        TagResponse tagResponse = tagService.getAllTags();
+        return new ResponseEntity(tagResponse, HttpStatus.OK);
     }
 
     @GetMapping("/settings")
@@ -39,7 +40,6 @@ public class ApiGeneralController {
 
     @GetMapping("/init")
     private InitResponse init() {
-        //System.out.println(initResponse.getTitle());
         return initResponse;
     }
 }

@@ -1,7 +1,6 @@
 package main.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,7 +9,6 @@ import java.util.List;
 @Entity
 @Table(name = "tags")
 @Data
-@NoArgsConstructor
 public class Tag {
 
     @Id

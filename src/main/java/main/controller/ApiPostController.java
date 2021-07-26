@@ -20,6 +20,7 @@ public class ApiPostController {
 
     @GetMapping()
     private ResponseEntity<PostResponse> posts() {
-        return new ResponseEntity<>(postService.getPosts(), HttpStatus.OK);
+        PostResponse postResponse = postService.getSortedPosts();
+        return new ResponseEntity<>(postResponse, HttpStatus.OK);
     }
 }
