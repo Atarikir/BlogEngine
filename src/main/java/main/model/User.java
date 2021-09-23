@@ -4,7 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -20,11 +20,11 @@ public class User {
 
     @Column(name = "is_moderator", columnDefinition = "TINYINT")
     @NotNull
-    private boolean isModerator;
+    private byte isModerator;
 
     @Column(name = "reg_time")
     @NotNull
-    private Date regTime;
+    private LocalDateTime regTime;
 
     @Column(name = "name")
     @NotNull

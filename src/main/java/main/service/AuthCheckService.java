@@ -5,5 +5,5 @@ import main.api.response.AuthCheckResponse;
 
 public interface AuthCheckService {
 
-    AuthCheckResponse getAuthCheckUser();
+    AuthCheckResponse getAuthCheckResponse(String email);
 }

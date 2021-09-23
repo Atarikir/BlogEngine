@@ -1,9 +1,9 @@
 package main.service;
 
-import main.api.response.TagResponse;
 
+import main.api.response.TagResponse;
 
 public interface TagService {
 
-    TagResponse getAllTags();
+    TagResponse getAllTags(String query);
 }

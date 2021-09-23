@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface Tag2PostRepository extends JpaRepository<Tag2Post, Integer> {
+
+    int countByTagId(int id);
 }

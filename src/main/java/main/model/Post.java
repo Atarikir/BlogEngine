@@ -5,7 +5,7 @@ import main.model.enums.ModerationStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -21,7 +21,7 @@ public class Post {
 
     @Column(name = "is_active", columnDefinition = "TINYINT")
     @NotNull
-    private boolean isActive;
+    private byte isActive;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "moderation_status", columnDefinition = "ENUM('NEW', 'ACCEPTED', 'DECLINED')")
@@ -37,7 +37,7 @@ public class Post {
 
     @Column(name = "time")
     @NotNull
-    private Date time;
+    private LocalDateTime time;
 
     @Column(name = "title")
     @NotNull

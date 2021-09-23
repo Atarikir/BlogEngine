@@ -4,5 +4,5 @@ import main.api.response.PostResponse;
 
 public interface PostService {
 
-    PostResponse getSortedPosts();
+    PostResponse getPostsForMainPage(int offset, int limit, String mode);
 }

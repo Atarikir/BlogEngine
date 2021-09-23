@@ -16,7 +16,7 @@
             <column name="reg_time" value="2021-07-13 16:48:30"/>
             <column name="name" value="Dmitriy"/>
             <column name="email" value="mitkiril@gmail.com"/>
-            <column name="password" value="$2y$10$XKvoxUu30AmEzgq0XbhTaO6rLsj7e45ijGA7GTj9JtxnK9kiwuyua"/>
+            <column name="password" value="$2y$12$K3WwpsFEIHMXcIbIPkbE4OEJwFW7/2yUxQDtBGwp6bkspQopvQYVa "/>
             <column name="code" value="111"/>
             <column name="photo" value="/home/pandora/Pictures/мерс-аватар-2.jpg"/>
         </insert>
@@ -27,7 +27,7 @@
             <column name="reg_time" value="2021-07-13 17:13:00"/>
             <column name="name" value="Denis"/>
             <column name="email" value="den@mail.ru"/>
-            <column name="password" value="$2y$10$dNP8Mx7FKe4Qr21afVTnvu2/6H/seP15QEq50HH/DEtntzB6SeLc6"/>
+            <column name="password" value="$2y$12$fHnLJx9vKT8zorrVqRjWounr78eXka.rQmVdB4JauklYHOEywVoqu "/>
             <column name="code" value="222"/>
             <column name="photo" value="/home/denis/Pictures/Ford-Mustang.jpg"/>
         </insert>
@@ -38,7 +38,7 @@
             <column name="reg_time" value="2021-07-13 17:20:45"/>
             <column name="name" value="Kris"/>
             <column name="email" value="kris@gmail.com"/>
-            <column name="password" value="$2y$10$gCSv/6tP394Lp4Di3GpdmOB4xFmUjlEg9LNjKGDgkcWczYL9UgrRC"/>
+            <column name="password" value="$2y$12$BbpQjUHWO5PJsw6COOjjKefAR1JlpPMI/48lkCrPw64ac3Ispwbvu "/>
             <column name="code" value="333"/>
             <column name="photo"/>
         </insert>

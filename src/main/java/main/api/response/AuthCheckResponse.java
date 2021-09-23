@@ -9,5 +9,5 @@ public class AuthCheckResponse {
     private boolean result;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private UserFullDto userFullDto;
+    private UserDto userDto;
 }
