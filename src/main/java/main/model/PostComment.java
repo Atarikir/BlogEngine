@@ -4,7 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -37,7 +37,7 @@ public class PostComment {
 
     @Column(name = "time")
     @NotNull
-    private Date time;
+    private LocalDateTime time;
 
     @Column(name = "text", columnDefinition = "TEXT")
     @NotNull

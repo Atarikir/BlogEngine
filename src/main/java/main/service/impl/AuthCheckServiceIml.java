@@ -1,6 +1,7 @@
 package main.service.impl;
 
 import main.api.response.AuthCheckResponse;
+import main.api.response.CaptchaResponse;
 import main.api.response.UserDto;
 import main.repository.UserRepository;
 import main.service.AuthCheckService;
@@ -23,7 +24,7 @@ public class AuthCheckServiceIml implements AuthCheckService {
 
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
         authCheckResponse.setResult(true);
-        authCheckResponse.setUserDto(UserDto.builder()
+        authCheckResponse.setUser(UserDto.builder()
                 .id(currentUser.getId())
                 .name(currentUser.getName())
                 .email(currentUser.getEmail())
@@ -31,5 +32,10 @@ public class AuthCheckServiceIml implements AuthCheckService {
                 .build());
 
         return authCheckResponse;
+    }
+
+    @Override
+    public CaptchaResponse getCaptcha() {
+        return null;
     }
 }

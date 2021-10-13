@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.api.response.AuthCheckResponse;
+import main.api.response.CaptchaResponse;
 import main.repository.UserRepository;
 import main.service.AuthCheckService;
 import org.springframework.http.HttpStatus;
@@ -30,5 +31,11 @@ public class ApiAuthController {
         }
         AuthCheckResponse authCheckResponse = authCheckService.getAuthCheckResponse(principal.getName());
         return new ResponseEntity<>(authCheckResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/captcha")
+    public ResponseEntity<CaptchaResponse> captcha() {
+        CaptchaResponse captchaResponse = authCheckService.getCaptcha();
+        return new ResponseEntity<>(captchaResponse, HttpStatus.OK);
     }
 }

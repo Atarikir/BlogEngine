@@ -1,8 +1,10 @@
 package main.controller;
 
+import main.api.response.CalendarResponse;
 import main.api.response.InitResponse;
 import main.api.response.SettingsResponse;
 import main.api.response.TagResponse;
+import main.service.PostService;
 import main.service.SettingsService;
 import main.service.TagService;
 import org.springframework.http.HttpStatus;
@@ -19,12 +21,14 @@ public class ApiGeneralController {
     private final TagService tagService;
     private final SettingsService settingsService;
     private final InitResponse initResponse;
+    private final PostService postService;
 
     public ApiGeneralController(TagService tagService, SettingsService settingsService,
-                                InitResponse initResponse) {
+                                InitResponse initResponse, PostService postService) {
         this.tagService = tagService;
         this.settingsService = settingsService;
         this.initResponse = initResponse;
+        this.postService = postService;
     }
 
 
@@ -43,5 +47,11 @@ public class ApiGeneralController {
     @GetMapping("/init")
     public ResponseEntity<InitResponse> init() {
         return new ResponseEntity<>(initResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<CalendarResponse> getPostsByYear(int year) {
+        CalendarResponse calendarResponse = postService.getPostsCountByYear(year);
+        return new ResponseEntity<>(calendarResponse, HttpStatus.OK);
     }
 }
