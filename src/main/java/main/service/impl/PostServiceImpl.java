@@ -32,7 +32,6 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final byte isActive = 1;
     private final ModerationStatus moderationStatus = ModerationStatus.ACCEPTED;
-    private final LocalDateTime time = LocalDateTime.now();
 
     public PostServiceImpl(PostRepository postRepository) {
         this.postRepository = postRepository;
@@ -59,10 +58,10 @@ public class PostServiceImpl implements PostService {
         Page<Post> posts;
 
         if (!query.isBlank()) {
-            posts = postRepository.getPostByQuery(isActive, moderationStatus, time, query, pageable);
+            posts = postRepository.getPostByQuery(isActive, moderationStatus, LocalDateTime.now(), query, pageable);
         } else {
             pageable = PageRequest.of(page, limit, Sort.by("time").descending());
-            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(isActive, moderationStatus, time,
+            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(isActive, moderationStatus, LocalDateTime.now(),
                     pageable);
         }
 
@@ -82,15 +81,15 @@ public class PostServiceImpl implements PostService {
 
         if (mode.equals(SortingMode.recent.toString())) {
             pageable = PageRequest.of(page, limit, Sort.by("time").descending());
-            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(isActive, moderationStatus, time,
+            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(isActive, moderationStatus, LocalDateTime.now(),
                     pageable);
         } else if (mode.equals(SortingMode.popular.toString())) {
-            posts = postRepository.getPostsByCommentsCount(isActive, moderationStatus, time, pageable);
+            posts = postRepository.getPostsByCommentsCount(isActive, moderationStatus, LocalDateTime.now(), pageable);
         } else if (mode.equals(SortingMode.best.toString())) {
-            posts = postRepository.getPostsByLikesCount(isActive, moderationStatus, time, pageable);
+            posts = postRepository.getPostsByLikesCount(isActive, moderationStatus, LocalDateTime.now(), pageable);
         } else if (mode.equals(SortingMode.early.toString())) {
             pageable = PageRequest.of(page, limit, Sort.by("time").ascending());
-            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(isActive, moderationStatus, time,
+            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(isActive, moderationStatus, LocalDateTime.now(),
                     pageable);
         }
 
@@ -136,16 +135,17 @@ public class PostServiceImpl implements PostService {
     @Override
     public CalendarResponse getPostsCountByYear(int year) {
 
-        final int CURRENT_YEAR = LocalDateTime.now().getYear();
+        int CURRENT_YEAR = LocalDateTime.now().getYear();
 
         if (year == 0) {
             year = CURRENT_YEAR;
         }
 
-        List<Integer> listYears = postRepository.getYears(isActive, moderationStatus, time)
+        List<Integer> listYears = postRepository.getYears(isActive, moderationStatus, LocalDateTime.now())
                 .stream().sorted().collect(Collectors.toList());
 
-        List<Object[]> postsByYear = postRepository.getPostCountInYearGroupByDate(isActive, moderationStatus, time, year);
+        List<Object[]> postsByYear = postRepository.getPostCountInYearGroupByDate(isActive, moderationStatus,
+                LocalDateTime.now(), year);
         Map<String, Long> mapPosts = new TreeMap<>();
 
         for (Object[] post : postsByYear) {
@@ -165,7 +165,7 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostsByDate(int offset, int limit, String date) {
 
         Pageable pageable = getPageable(offset, limit);
-        Page<Post> posts = postRepository.getPostByDate(isActive, moderationStatus, time, date, pageable);
+        Page<Post> posts = postRepository.getPostByDate(isActive, moderationStatus, LocalDateTime.now(), date, pageable);
 
         List<PostDto> postDtoList = getPostsList(posts);
 
@@ -180,7 +180,7 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostsByTag(int offset, int limit, String tag) {
 
         Pageable pageable = getPageable(offset, limit);
-        Page<Post> posts = postRepository.getPostByTag(isActive, moderationStatus, time, tag, pageable);
+        Page<Post> posts = postRepository.getPostByTag(isActive, moderationStatus, LocalDateTime.now(), tag, pageable);
 
         List<PostDto> postDtoList = getPostsList(posts);
 
@@ -195,7 +195,7 @@ public class PostServiceImpl implements PostService {
     public ResponseEntity<PostDto> getPostById(Integer id) {
 
         Post currentPost = postRepository.findPostByIsActiveAndModerationStatusAndTimeBeforeAndId(isActive,
-                moderationStatus, time, id);
+                moderationStatus, LocalDateTime.now(), id);
 
         if (currentPost == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -221,7 +221,8 @@ public class PostServiceImpl implements PostService {
         tagList.forEach(tag -> tags.add(tag.getName()));
 
         int viewCount = currentPost.getViewCount();
-        currentPost.setViewCount(viewCount + 1);
+        int increaseView = 1;
+        currentPost.setViewCount(viewCount + increaseView);
         postRepository.save(currentPost);
 
         PostDto postDto = createPostDto(currentPost);
