@@ -52,7 +52,6 @@ public class AuthCheckServiceIml implements AuthCheckService {
         String errorCaptcha = "Код с картинки введён неверно";
         String name = authRegRequest.getName();
         String password = authRegRequest.getPassword();
-        String captchaCode = authRegRequest.getCaptcha();
         CaptchaCode captchaCodeDB = captchaCodeRepository.findByCode(authRegRequest.getCaptcha());
         User user = userRepository.findByEmail(authRegRequest.getEmail());
 

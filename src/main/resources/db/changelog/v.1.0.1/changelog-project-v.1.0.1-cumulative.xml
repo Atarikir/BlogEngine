@@ -11,5 +11,6 @@
     <include file="/2021.07.13--4--insert-tags.xml" relativeToChangelogFile="true"/>
     <include file="/2021.07.13--5--insert-tag2post.xml" relativeToChangelogFile="true"/>
     <include file="/2021.07.13--6--insert-post_comments.xml" relativeToChangelogFile="true"/>
+    <include file="/2021.10.29--7--insert-global_settings.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
