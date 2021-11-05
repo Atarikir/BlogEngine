@@ -8,7 +8,6 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
-
     private long id;
     private String name;
     private String photo;

@@ -10,7 +10,6 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostDto {
-
     private int id;
     private Long timestamp;
     private Boolean active;

@@ -74,13 +74,13 @@ public class TagServiceImpl implements TagService {
     }
 
     public List<TagDto> getListTagDtoWithNormalizedWeight(List<TagDto> tagDtoList) {
-
         double maxWeight = 0.0;
         if (!tagDtoList.isEmpty()) {
             maxWeight = tagDtoList.stream().max(Comparator.comparing(TagDto::getWeight)).get().getWeight();
         }
 
         double coefficient = 1 / maxWeight;
+
 
         tagDtoList.forEach(tagDto -> tagDto.setWeight(Double
                 .parseDouble(decimalFormat.format(tagDto.getWeight() * coefficient)

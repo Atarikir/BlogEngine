@@ -1,15 +1,25 @@
 package main.service;
 
 import main.api.request.AuthRegRequest;
+import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.AuthRegisterResponse;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 public interface AuthCheckService {
 
-    AuthCheckResponse getAuthCheckResponse(String email);
+    AuthCheckResponse getLoginUser(LoginRequest loginRequest);
 
-    ResponseEntity<AuthRegisterResponse> createUser(AuthRegRequest authRegRequest);
+    AuthCheckResponse getAuthCheck(String email);
 
+    AuthRegisterResponse createUser(AuthRegRequest authRegRequest);
+
+    AuthCheckResponse getLogoutUser(HttpServletRequest request);
+
+    String getLoggedInUser();
+
+    BCryptPasswordEncoder getEncoder();
 }

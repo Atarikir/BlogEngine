@@ -1,6 +1,7 @@
 package main.repository;
 
 import main.model.Post;
+import main.model.User;
 import main.model.enums.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     int countByIsActiveAndModerationStatusAndTimeBefore(byte isActive, ModerationStatus moderationStatus,
                                                         LocalDateTime time);
+
+    int countByIsActiveAndModerationStatus(byte isActive, ModerationStatus moderationStatus);
 
     Page<Post> findPostsByIsActiveAndModerationStatusAndTimeBefore(byte isActive, ModerationStatus moderationStatus,
                                                                    LocalDateTime time, Pageable pageable);
@@ -55,6 +58,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                             Pageable pageable);
 
     Post findPostByIsActiveAndModerationStatusAndTimeBeforeAndId(byte isActive,
-                                                                          ModerationStatus moderationStatus,
-                                                                          LocalDateTime time, Integer id);
+                                                                 ModerationStatus moderationStatus,
+                                                                 LocalDateTime time, Integer id);
+
+    Page<Post> findPostsByIsActiveAndUser(byte isActive, User user, Pageable pageable);
+
+    Page<Post> findPostsByIsActiveAndModerationStatusAndUser(byte isActive, ModerationStatus moderationStatus, User user,
+                                                             Pageable pageable);
 }

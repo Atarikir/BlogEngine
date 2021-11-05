@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import main.model.enums.Role;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -58,4 +59,12 @@ public class User {
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     private List<PostVote> postVotes;
+
+    public Role getRole() {
+        return isModerator == 1 ? Role.MODERATOR : Role.USER;
+    }
+
+    public boolean isModerator() {
+        return isModerator == 1;
+    }
 }
