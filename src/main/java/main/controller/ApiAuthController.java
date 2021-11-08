@@ -5,8 +5,6 @@ import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.AuthRegisterResponse;
 import main.api.response.CaptchaResponse;
-import main.model.User;
-import main.repository.UserRepository;
 import main.service.AuthCheckService;
 import main.service.CaptchaService;
 import org.springframework.http.HttpStatus;
@@ -23,20 +21,15 @@ public class ApiAuthController {
 
     private final AuthCheckService authCheckService;
     private final CaptchaService captchaService;
-    private final UserRepository userRepository;
 
-    public ApiAuthController(AuthCheckService authCheckService, CaptchaService captchaService, UserRepository userRepository) {
+    public ApiAuthController(AuthCheckService authCheckService, CaptchaService captchaService) {
         this.authCheckService = authCheckService;
         this.captchaService = captchaService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/check")
     public ResponseEntity<AuthCheckResponse> check(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.ok(new AuthCheckResponse());
-        }
-        AuthCheckResponse authCheckResponse = authCheckService.getAuthCheck(principal.getName());
+        AuthCheckResponse authCheckResponse = authCheckService.getAuthCheck(principal);
         return new ResponseEntity<>(authCheckResponse, HttpStatus.OK);
     }
 
@@ -54,12 +47,6 @@ public class ApiAuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthCheckResponse> login(@RequestBody LoginRequest loginRequest) {
-        User currentUser = userRepository.findByEmail(loginRequest.getEmail());
-
-        if (currentUser == null || !authCheckService.getEncoder().matches(loginRequest.getPassword(),
-                currentUser.getPassword())) {
-            return ResponseEntity.ok(new AuthCheckResponse());
-        }
         AuthCheckResponse authCheckResponse = authCheckService.getLoginUser(loginRequest);
         return new ResponseEntity<>(authCheckResponse, HttpStatus.OK);
     }

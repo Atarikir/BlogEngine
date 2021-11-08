@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.security.Principal;
 import java.time.LocalDateTime;
 
 @Service
@@ -32,7 +33,10 @@ public class AuthCheckServiceIml implements AuthCheckService {
     private final CaptchaCodeRepository captchaCodeRepository;
     private final AuthenticationManager authenticationManager;
 
-    public AuthCheckServiceIml(UserRepository userRepository, PostRepository postRepository, CaptchaCodeRepository captchaCodeRepository, AuthenticationManager authenticationManager) {
+    public AuthCheckServiceIml(UserRepository userRepository,
+                               PostRepository postRepository,
+                               CaptchaCodeRepository captchaCodeRepository,
+                               AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.captchaCodeRepository = captchaCodeRepository;
@@ -40,26 +44,34 @@ public class AuthCheckServiceIml implements AuthCheckService {
     }
 
     @Override
-    public AuthCheckResponse getAuthCheck(String email) {
+    public AuthCheckResponse getAuthCheck(Principal principal) {
+        if (principal == null) {
+            return new AuthCheckResponse();
+        }
+
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
         authCheckResponse.setResult(true);
-        authCheckResponse.setUser(getUserDto(email));
+        authCheckResponse.setUser(getUserDto(principal.getName()));
 
         return authCheckResponse;
     }
 
     @Override
     public AuthCheckResponse getLoginUser(LoginRequest loginRequest) {
+        User currentUser = userRepository.findByEmail(loginRequest.getEmail());
+
+        if (currentUser == null || !getEncoder().matches(loginRequest.getPassword(), currentUser.getPassword())) {
+            return new AuthCheckResponse();
+        }
+
         Authentication auth = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(auth);
-        org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User)
-                auth.getPrincipal();
 
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
         authCheckResponse.setResult(true);
-        authCheckResponse.setUser(getUserDto(user.getUsername()));
+        authCheckResponse.setUser(getUserDto(getLoggedInUser(auth)));
 
         return authCheckResponse;
     }
@@ -67,6 +79,7 @@ public class AuthCheckServiceIml implements AuthCheckService {
     @Override
     public AuthCheckResponse getLogoutUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
+
         if (session != null) {
             session.invalidate();
         }
@@ -79,16 +92,10 @@ public class AuthCheckServiceIml implements AuthCheckService {
     }
 
     @Override
-    public String getLoggedInUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public String getLoggedInUser(Authentication auth) {
         org.springframework.security.core.userdetails.User user =
                 (org.springframework.security.core.userdetails.User) auth.getPrincipal();
         return user.getUsername();
-    }
-
-    @Override
-    public BCryptPasswordEncoder getEncoder() {
-        return new BCryptPasswordEncoder(12);
     }
 
     @Override
@@ -168,6 +175,10 @@ public class AuthCheckServiceIml implements AuthCheckService {
 
     public String encodeBCrypt(String password) {
         return getEncoder().encode(password);
+    }
+
+    public BCryptPasswordEncoder getEncoder() {
+        return new BCryptPasswordEncoder(12);
     }
 
     public int getModerationCount() {

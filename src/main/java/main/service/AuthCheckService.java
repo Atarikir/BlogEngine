@@ -4,22 +4,21 @@ import main.api.request.AuthRegRequest;
 import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.AuthRegisterResponse;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 
 
 public interface AuthCheckService {
 
     AuthCheckResponse getLoginUser(LoginRequest loginRequest);
 
-    AuthCheckResponse getAuthCheck(String email);
+    AuthCheckResponse getAuthCheck(Principal principal);
 
     AuthRegisterResponse createUser(AuthRegRequest authRegRequest);
 
     AuthCheckResponse getLogoutUser(HttpServletRequest request);
 
-    String getLoggedInUser();
-
-    BCryptPasswordEncoder getEncoder();
+    String getLoggedInUser(Authentication auth);
 }

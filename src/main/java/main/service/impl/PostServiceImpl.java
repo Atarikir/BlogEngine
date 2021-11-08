@@ -10,12 +10,15 @@ import main.model.enums.ModerationStatus;
 import main.model.enums.SortingMode;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
+import main.service.AuthCheckService;
 import main.service.PostService;
 import org.jsoup.Jsoup;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,14 +34,15 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final AuthCheckServiceIml authCheckServiceIml;
+    private final AuthCheckService authCheckService;
     private static final byte IS_ACTIVE = 1;
     private static final ModerationStatus MODERATION_STATUS_ACCEPTED = ModerationStatus.ACCEPTED;
 
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, AuthCheckServiceIml authCheckServiceIml) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
+                           AuthCheckService authCheckService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
-        this.authCheckServiceIml = authCheckServiceIml;
+        this.authCheckService = authCheckService;
     }
 
     @Override
@@ -72,11 +76,12 @@ public class PostServiceImpl implements PostService {
         Page<Post> posts;
 
         if (!query.isBlank()) {
-            posts = postRepository.getPostByQuery(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), query, pageable);
+            posts = postRepository.getPostByQuery(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), query,
+                    pageable);
         } else {
             pageable = PageRequest.of(page, limit, Sort.by("time").descending());
-            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE, MODERATION_STATUS_ACCEPTED,
-                    LocalDateTime.now(), pageable);
+            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE,
+                    MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), pageable);
         }
 
         List<PostDto> postDtoList = getPostsList(posts);
@@ -91,7 +96,8 @@ public class PostServiceImpl implements PostService {
     public Page<Post> getSortedMyPosts(int offset, int limit, String status) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = null;
-        User user = userRepository.findByEmail(authCheckServiceIml.getLoggedInUser());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(authCheckService.getLoggedInUser(auth));
 
         if (status.equals("inactive")) {
             posts = postRepository.findPostsByIsActiveAndUser((byte) 0, user, pageable);
@@ -116,16 +122,18 @@ public class PostServiceImpl implements PostService {
 
         if (mode.equals(SortingMode.RECENT.toString().toLowerCase())) {
             pageable = PageRequest.of(page, limit, Sort.by("time").descending());
-            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE, MODERATION_STATUS_ACCEPTED,
-                    LocalDateTime.now(), pageable);
+            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE,
+                    MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), pageable);
         } else if (mode.equals(SortingMode.POPULAR.toString().toLowerCase())) {
-            posts = postRepository.getPostsByCommentsCount(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), pageable);
+            posts = postRepository.getPostsByCommentsCount(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(),
+                    pageable);
         } else if (mode.equals(SortingMode.BEST.toString().toLowerCase())) {
-            posts = postRepository.getPostsByLikesCount(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), pageable);
+            posts = postRepository.getPostsByLikesCount(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(),
+                    pageable);
         } else if (mode.equals(SortingMode.EARLY.toString().toLowerCase())) {
             pageable = PageRequest.of(page, limit, Sort.by("time").ascending());
-            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE, MODERATION_STATUS_ACCEPTED,
-                    LocalDateTime.now(), pageable);
+            posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE,
+                    MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), pageable);
         }
 
         return posts;
@@ -200,7 +208,8 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostByDate(int offset, int limit, String date) {
 
         Pageable pageable = getPageable(offset, limit);
-        Page<Post> posts = postRepository.getPostByDate(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), date, pageable);
+        Page<Post> posts = postRepository.getPostByDate(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(),
+                date, pageable);
 
         List<PostDto> postDtoList = getPostsList(posts);
 
@@ -215,7 +224,8 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostByTag(int offset, int limit, String tag) {
 
         Pageable pageable = getPageable(offset, limit);
-        Page<Post> posts = postRepository.getPostByTag(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(), tag, pageable);
+        Page<Post> posts = postRepository.getPostByTag(IS_ACTIVE, MODERATION_STATUS_ACCEPTED, LocalDateTime.now(),
+                tag, pageable);
 
         List<PostDto> postDtoList = getPostsList(posts);
 

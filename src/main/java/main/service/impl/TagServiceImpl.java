@@ -24,7 +24,8 @@ public class TagServiceImpl implements TagService {
     private final Tag2PostRepository tag2PostRepository;
     private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
-    public TagServiceImpl(TagRepository tagRepository, PostRepository postRepository, Tag2PostRepository tag2PostRepository) {
+    public TagServiceImpl(TagRepository tagRepository, PostRepository postRepository,
+                          Tag2PostRepository tag2PostRepository) {
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.tag2PostRepository = tag2PostRepository;
@@ -80,7 +81,6 @@ public class TagServiceImpl implements TagService {
         }
 
         double coefficient = 1 / maxWeight;
-
 
         tagDtoList.forEach(tagDto -> tagDto.setWeight(Double
                 .parseDouble(decimalFormat.format(tagDto.getWeight() * coefficient)
