@@ -22,7 +22,7 @@ public class PostVote {
     @NotNull
     private User user;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "post_id")
     @NotNull
     private Post post;

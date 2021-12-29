@@ -17,6 +17,11 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     #enable: false
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
 ##init config
 blog:
   title: DevPub
@@ -28,3 +33,15 @@ blog:
 
 ##captcha config
 captcha.deleteLimitTime: 1
+
+upload.dir: /upload
+
+settings:
+  code:
+    multiuserMode: "MULTIUSER_MODE"
+    postPremoderation: "POST_PREMODERATION"
+    statisticsIsPublic: "STATISTICS_IS_PUBLIC"
+  value:
+    true: "YES"
+    false: "NO"
+

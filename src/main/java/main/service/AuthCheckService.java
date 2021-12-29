@@ -3,7 +3,7 @@ package main.service;
 import main.api.request.AuthRegRequest;
 import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
-import main.api.response.AuthRegisterResponse;
+import main.api.response.ResultErrorResponse;
 import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +16,7 @@ public interface AuthCheckService {
 
     AuthCheckResponse getAuthCheck(Principal principal);
 
-    AuthRegisterResponse createUser(AuthRegRequest authRegRequest);
+    ResultErrorResponse createUser(AuthRegRequest authRegRequest);
 
     AuthCheckResponse getLogoutUser(HttpServletRequest request);
 

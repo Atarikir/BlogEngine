@@ -7,11 +7,11 @@ import main.model.enums.ModerationStatus;
 import main.repository.PostRepository;
 import main.repository.Tag2PostRepository;
 import main.repository.TagRepository;
+import main.service.GeneralService;
 import main.service.TagService;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -19,13 +19,14 @@ import java.util.List;
 @Service
 public class TagServiceImpl implements TagService {
 
+    private final GeneralService generalService;
     private final TagRepository tagRepository;
     private final PostRepository postRepository;
     private final Tag2PostRepository tag2PostRepository;
-    private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
-    public TagServiceImpl(TagRepository tagRepository, PostRepository postRepository,
+    public TagServiceImpl(GeneralService generalService, TagRepository tagRepository, PostRepository postRepository,
                           Tag2PostRepository tag2PostRepository) {
+        this.generalService = generalService;
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.tag2PostRepository = tag2PostRepository;
@@ -49,7 +50,7 @@ public class TagServiceImpl implements TagService {
         return tagResponse;
     }
 
-    public List<TagDto> getTagList(List<Tag> tags) {
+    private List<TagDto> getTagList(List<Tag> tags) {
         List<TagDto> tagDtoList = new ArrayList<>();
         for (Tag tag : tags) {
             tagDtoList.add(createTagDto(tag));
@@ -57,7 +58,7 @@ public class TagServiceImpl implements TagService {
         return tagDtoList;
     }
 
-    public TagDto createTagDto(Tag tag) {
+    private TagDto createTagDto(Tag tag) {
 
         TagDto tagDto = new TagDto();
         tagDto.setName(tag.getName());
@@ -65,16 +66,17 @@ public class TagServiceImpl implements TagService {
         return tagDto;
     }
 
-    public double getWeightTag(Tag tag) {
+    private double getWeightTag(Tag tag) {
 
         int countByTag = tag2PostRepository.countByTagId(tag.getId());
         int countAllTags = postRepository.countByIsActiveAndModerationStatusAndTimeBefore((byte) 1,
-                ModerationStatus.ACCEPTED, LocalDateTime.now());
+                ModerationStatus.ACCEPTED, generalService.getTimeNow());
 
         return (double) countByTag / countAllTags;
     }
 
-    public List<TagDto> getListTagDtoWithNormalizedWeight(List<TagDto> tagDtoList) {
+    private List<TagDto> getListTagDtoWithNormalizedWeight(List<TagDto> tagDtoList) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
         double maxWeight = 0.0;
         if (!tagDtoList.isEmpty()) {
             maxWeight = tagDtoList.stream().max(Comparator.comparing(TagDto::getWeight)).get().getWeight();

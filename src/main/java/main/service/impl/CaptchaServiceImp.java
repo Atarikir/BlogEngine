@@ -6,6 +6,7 @@ import main.api.response.CaptchaResponse;
 import main.model.CaptchaCode;
 import main.repository.CaptchaCodeRepository;
 import main.service.CaptchaService;
+import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -26,9 +26,11 @@ public class CaptchaServiceImp implements CaptchaService {
     @Value("${captcha.deleteLimitTime}")
     private int deleteLimitTime;
 
+    private final GeneralService generalService;
     private final CaptchaCodeRepository captchaCodeRepository;
 
-    public CaptchaServiceImp(CaptchaCodeRepository captchaCodeRepository) {
+    public CaptchaServiceImp(GeneralService generalService, CaptchaCodeRepository captchaCodeRepository) {
+        this.generalService = generalService;
         this.captchaCodeRepository = captchaCodeRepository;
     }
 
@@ -40,10 +42,10 @@ public class CaptchaServiceImp implements CaptchaService {
         String code = generateCode(cage, token);
         String secretCode = UUID.randomUUID().toString();
 
-        captchaCodeRepository.deleteCaptcha(LocalDateTime.now().minusHours(deleteLimitTime));
+        captchaCodeRepository.deleteCaptcha(generalService.getTimeNow().minusHours(deleteLimitTime));
 
         captchaCodeRepository.save(CaptchaCode.builder()
-                .time(LocalDateTime.now())
+                .time(generalService.getTimeNow())
                 .code(token)
                 .secretCode(secretCode)
                 .build());
@@ -55,7 +57,7 @@ public class CaptchaServiceImp implements CaptchaService {
         return captchaResponse;
     }
 
-    public String generateCode(Cage cage, String token) {
+    private String generateCode(Cage cage, String token) {
         int resizeWidth = 100;
         int resizeHeight = 35;
         BufferedImage image = cage.drawImage(token);

@@ -3,16 +3,21 @@ package main.service.impl;
 import main.api.request.AuthRegRequest;
 import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
-import main.api.response.AuthRegisterResponse;
 import main.api.response.ErrorResponse;
+import main.api.response.ResultErrorResponse;
 import main.api.response.UserDto;
+import main.exceptions.NoFoundException;
 import main.model.CaptchaCode;
+import main.model.GlobalSetting;
 import main.model.User;
 import main.model.enums.ModerationStatus;
 import main.repository.CaptchaCodeRepository;
+import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.service.AuthCheckService;
+import main.service.GeneralService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,24 +28,33 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
-import java.time.LocalDateTime;
 
 @Service
-public class AuthCheckServiceIml implements AuthCheckService {
+public class AuthCheckServiceImpl implements AuthCheckService {
+
+    @Value("${settings.value.false}")
+    private String settingValueFalse;
+
+    @Value("${settings.code.multiuserMode}")
+    private String multiuserMode;
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final AuthenticationManager authenticationManager;
+    private final GeneralService generalService;
+    private final GlobalSettingRepository globalSettingRepository;
 
-    public AuthCheckServiceIml(UserRepository userRepository,
-                               PostRepository postRepository,
-                               CaptchaCodeRepository captchaCodeRepository,
-                               AuthenticationManager authenticationManager) {
+    public AuthCheckServiceImpl(UserRepository userRepository,
+                                PostRepository postRepository, CaptchaCodeRepository captchaCodeRepository,
+                                AuthenticationManager authenticationManager, GeneralService generalService,
+                                GlobalSettingRepository globalSettingRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.captchaCodeRepository = captchaCodeRepository;
         this.authenticationManager = authenticationManager;
+        this.generalService = generalService;
+        this.globalSettingRepository = globalSettingRepository;
     }
 
     @Override
@@ -99,7 +113,7 @@ public class AuthCheckServiceIml implements AuthCheckService {
     }
 
     @Override
-    public AuthRegisterResponse createUser(AuthRegRequest authRegRequest) {
+    public ResultErrorResponse createUser(AuthRegRequest authRegRequest) {
         int minLengthPassword = 6;
         String errorEmail = "Этот e-mail уже зарегистрирован";
         String errorName = "Имя указано неверно";
@@ -109,57 +123,55 @@ public class AuthCheckServiceIml implements AuthCheckService {
         String password = authRegRequest.getPassword();
         CaptchaCode captchaCodeDB = captchaCodeRepository.findByCode(authRegRequest.getCaptcha());
         User user = userRepository.findByEmail(authRegRequest.getEmail());
+        GlobalSetting globalSetting = globalSettingRepository.findByCode(multiuserMode);
+
+        if (globalSetting.getValue().equals(settingValueFalse)) {
+            throw new NoFoundException();
+        }
 
         if (user != null) {
-            return AuthRegisterResponse.builder()
-                    .result(false)
-                    .errors(ErrorResponse.builder()
+            return generalService.errorsRequest(
+                    ErrorResponse.builder()
                             .email(errorEmail)
-                            .build())
-                    .build();
+                            .build());
         }
 
         if (!name.matches("^[а-яА-ЯёЁa-zA-Z0-9]{2,20}$")) {
-            return AuthRegisterResponse.builder()
-                    .result(false)
-                    .errors(ErrorResponse.builder()
+            return generalService.errorsRequest(
+                    ErrorResponse.builder()
                             .name(errorName)
-                            .build())
-                    .build();
+                            .build());
         }
 
         if (password.length() < minLengthPassword) {
-            return AuthRegisterResponse.builder()
-                    .result(false)
-                    .errors(ErrorResponse.builder()
+            return generalService.errorsRequest(
+                    ErrorResponse.builder()
                             .password(errorPassword)
-                            .build())
-                    .build();
+                            .build());
         }
 
         if (captchaCodeDB == null || !captchaCodeDB.getSecretCode().equals(authRegRequest.getCaptchaSecret())) {
-            return AuthRegisterResponse.builder()
-                    .result(false)
-                    .errors(ErrorResponse.builder()
+            return generalService.errorsRequest(
+                    ErrorResponse.builder()
                             .captcha(errorCaptcha)
-                            .build())
-                    .build();
+                            .build()
+            );
         }
 
-        userRepository.save(User.builder()
-                .isModerator((byte) 0)
-                .regTime(LocalDateTime.now())
-                .name(name)
-                .email(authRegRequest.getEmail())
-                .password(encodeBCrypt(authRegRequest.getPassword()))
-                .build());
+        userRepository.save(
+                User.builder()
+                        .isModerator((byte) 0)
+                        .regTime(generalService.getTimeNow())
+                        .name(name)
+                        .email(authRegRequest.getEmail())
+                        .password(encodeBCrypt(authRegRequest.getPassword()))
+                        .build()
+        );
 
-        return AuthRegisterResponse.builder()
-                .result(true)
-                .build();
+        return generalService.getResultTrue();
     }
 
-    public UserDto getUserDto(String email) {
+    private UserDto getUserDto(String email) {
         User currentUser = userRepository.findByEmail(email);
 
         return UserDto.builder()
@@ -173,15 +185,15 @@ public class AuthCheckServiceIml implements AuthCheckService {
                 .build();
     }
 
-    public String encodeBCrypt(String password) {
+    private String encodeBCrypt(String password) {
         return getEncoder().encode(password);
     }
 
-    public BCryptPasswordEncoder getEncoder() {
+    private BCryptPasswordEncoder getEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
-    public int getModerationCount() {
+    private int getModerationCount() {
         byte isActive = 1;
         ModerationStatus moderationStatus = ModerationStatus.NEW;
         return postRepository.countByIsActiveAndModerationStatus(isActive, moderationStatus);

@@ -1,6 +1,9 @@
 package main.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,6 +13,9 @@ import java.util.List;
 @Entity
 @Table(name = "post_comments")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostComment {
 
     @Id
@@ -18,9 +24,8 @@ public class PostComment {
     @NotNull
     private int id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_id")
-    private PostComment parentId;
+    private Integer parentId;
 
     @OneToMany(mappedBy = "parentId", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<PostComment> postComments;

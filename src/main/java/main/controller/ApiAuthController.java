@@ -3,7 +3,7 @@ package main.controller;
 import main.api.request.AuthRegRequest;
 import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
-import main.api.response.AuthRegisterResponse;
+import main.api.response.ResultErrorResponse;
 import main.api.response.CaptchaResponse;
 import main.service.AuthCheckService;
 import main.service.CaptchaService;
@@ -40,9 +40,9 @@ public class ApiAuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthRegisterResponse> registration(@RequestBody AuthRegRequest authRegRequest) {
-        AuthRegisterResponse authRegisterResponse = authCheckService.createUser(authRegRequest);
-        return new ResponseEntity<>(authRegisterResponse, HttpStatus.OK);
+    public ResponseEntity<ResultErrorResponse> registration(@RequestBody AuthRegRequest authRegRequest) {
+        ResultErrorResponse resultErrorResponse = authCheckService.createUser(authRegRequest);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
     @PostMapping("/login")

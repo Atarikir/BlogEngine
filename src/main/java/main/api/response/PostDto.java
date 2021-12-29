@@ -21,7 +21,6 @@ public class PostDto {
     private Integer dislikeCount;
     private Integer commentCount;
     private Integer viewCount;
-    private List<CommentsDto> comments;
+    private List<CommentDto> comments;
     private List<String> tags;
-
 }

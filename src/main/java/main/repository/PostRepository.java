@@ -23,6 +23,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     int countByIsActiveAndModerationStatus(byte isActive, ModerationStatus moderationStatus);
 
+    long count();
+
+    @Query("SELECT SUM(p.viewCount) FROM Post p")
+    long getAllViewsCount();
+
     Page<Post> findPostsByIsActiveAndModerationStatusAndTimeBefore(byte isActive, ModerationStatus moderationStatus,
                                                                    LocalDateTime time, Pageable pageable);
 
@@ -57,12 +62,19 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     Page<Post> getPostByTag(byte isActive, ModerationStatus moderationStatus, LocalDateTime time, String tag,
                             Pageable pageable);
 
-    Post findPostByIsActiveAndModerationStatusAndTimeBeforeAndId(byte isActive,
-                                                                 ModerationStatus moderationStatus,
-                                                                 LocalDateTime time, Integer id);
-
     Page<Post> findPostsByIsActiveAndUser(byte isActive, User user, Pageable pageable);
 
     Page<Post> findPostsByIsActiveAndModerationStatusAndUser(byte isActive, ModerationStatus moderationStatus, User user,
                                                              Pageable pageable);
+
+    Page<Post> findPostsByIsActiveAndModerationStatus(byte isActive, ModerationStatus moderationStatus, Pageable pageable);
+
+    Page<Post> findPostsByIsActiveAndModerationStatusAndModeratorId(byte isActive, ModerationStatus moderationStatus,
+                                                                    int userId, Pageable pageable);
+
+    Post findById(int id);
+
+    //Запрос не работает
+    @Query(value = "SELECT p.id FROM posts p ORDER BY p.time ASC LIMIT 1", nativeQuery = true)
+    Post getFirstPublicationTime();
 }

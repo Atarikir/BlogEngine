@@ -1,6 +1,9 @@
 package main.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import main.model.enums.ModerationStatus;
 
 import javax.persistence.*;
@@ -11,6 +14,9 @@ import java.util.List;
 @Entity
 @Table(name = "posts")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Post {
 
     @Id
@@ -28,7 +34,7 @@ public class Post {
     private ModerationStatus moderationStatus;
 
     @Column(name = "moderator_id")
-    private int moderatorId;
+    private Integer moderatorId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
