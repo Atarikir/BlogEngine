@@ -21,4 +21,8 @@ public interface AuthCheckService {
     AuthCheckResponse getLogoutUser(HttpServletRequest request);
 
     String getLoggedInUser(Authentication auth);
+
+    boolean isUserAuthorize();
+
+    main.model.User getAuthorizedUser();
 }

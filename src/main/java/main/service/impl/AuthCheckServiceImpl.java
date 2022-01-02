@@ -81,6 +81,7 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         Authentication auth = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
@@ -103,13 +104,6 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
         authCheckResponse.setResult(true);
         return authCheckResponse;
-    }
-
-    @Override
-    public String getLoggedInUser(Authentication auth) {
-        org.springframework.security.core.userdetails.User user =
-                (org.springframework.security.core.userdetails.User) auth.getPrincipal();
-        return user.getUsername();
     }
 
     @Override
@@ -170,6 +164,29 @@ public class AuthCheckServiceImpl implements AuthCheckService {
 
         return generalService.getResultTrue();
     }
+
+    @Override
+    public String getLoggedInUser(Authentication auth) {
+        org.springframework.security.core.userdetails.User user =
+                (org.springframework.security.core.userdetails.User) auth.getPrincipal();
+        return user.getUsername();
+    }
+
+    @Override
+    public boolean isUserAuthorize() {
+        return userRepository.findByEmail(getLoggedUserName()) != null;
+    }
+
+    @Override
+    public main.model.User getAuthorizedUser() {
+        return userRepository.findByEmail(getLoggedUserName());
+    }
+
+    private String getLoggedUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return getLoggedInUser(authentication);
+    }
+
 
     private UserDto getUserDto(String email) {
         User currentUser = userRepository.findByEmail(email);

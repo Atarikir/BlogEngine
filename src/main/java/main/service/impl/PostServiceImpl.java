@@ -1,6 +1,7 @@
 package main.service.impl;
 
 import main.api.request.CreatePostRequest;
+import main.api.request.PostModerationRequest;
 import main.api.response.*;
 import main.exceptions.NoFoundException;
 import main.model.*;
@@ -16,8 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +51,7 @@ public class PostServiceImpl implements PostService {
     private final AuthCheckService authCheckService;
     private final GeneralService generalService;
     private final GlobalSettingRepository globalSettingRepository;
+    private final PostVoteRepository postVoteRepository;
     private static final byte IS_ACTIVE = 1;
     private static final int MIN_LENGTH_TITLE = 3;
     private static final int MIN_LENGTH_TEXT = 50;
@@ -62,7 +62,7 @@ public class PostServiceImpl implements PostService {
     public PostServiceImpl(Tag2PostRepository tag2PostRepository, TagRepository tagRepository,
                            PostRepository postRepository, UserRepository userRepository,
                            AuthCheckService authCheckService, GeneralService generalService,
-                           GlobalSettingRepository globalSettingRepository) {
+                           GlobalSettingRepository globalSettingRepository, PostVoteRepository postVoteRepository) {
         this.tag2PostRepository = tag2PostRepository;
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
@@ -70,6 +70,7 @@ public class PostServiceImpl implements PostService {
         this.authCheckService = authCheckService;
         this.generalService = generalService;
         this.globalSettingRepository = globalSettingRepository;
+        this.postVoteRepository = postVoteRepository;
     }
 
     @Override
@@ -306,6 +307,67 @@ public class PostServiceImpl implements PostService {
         return generalService.getResultTrue();
     }
 
+    @Override
+    public ResultErrorResponse likePost(PostModerationRequest postModerationRequest, Principal principal) {
+
+//        if (principal == null) {
+//            throw new UnauthorizedException();
+//        }
+
+//        if (!authCheckService.isUserAuthorize()) {
+//            throw new UnauthorizedException();
+//        } else {
+//            User currentUser = authCheckService.getAuthorizedUser();
+        //}
+        String email = principal.getName();
+        int id = postModerationRequest.getPostId();
+        byte valueVote = 1;
+        
+        return addValueVote(email, id, valueVote);
+    }
+
+    @Override
+    public ResultErrorResponse dislikePost(PostModerationRequest postModerationRequest, Principal principal) {
+        String email = principal.getName();
+        int id = postModerationRequest.getPostId();
+        byte valueVote = -1;
+        return addValueVote(email, id, valueVote);
+    }
+
+    private ResultErrorResponse addValueVote(String email, int id, byte valueVote) {
+
+        User currentUser = userRepository.findByEmail(email);
+        Post currentPost = postRepository.findById(id);
+        PostVote postVote = postVoteRepository.findByUserAndPost(currentUser, currentPost);
+        ResultErrorResponse resultErrorResponse;
+
+        if (postVote == null) {
+            save(currentUser, currentPost, valueVote);
+            resultErrorResponse = generalService.getResultTrue();
+        } else {
+            if (postVote.getValue() == valueVote) {
+                resultErrorResponse = generalService.getResultFalse();
+            } else {
+                postVote.setValue(valueVote);
+                postVote.setTime(generalService.getTimeNow());
+                postVoteRepository.save(postVote);
+                resultErrorResponse = generalService.getResultTrue();
+            }
+        }
+
+        return resultErrorResponse;
+    }
+
+    private PostVote save(User user, Post post, byte valueVote) {
+        return postVoteRepository.save(
+                PostVote.builder()
+                        .user(user)
+                        .post(post)
+                        .time(generalService.getTimeNow())
+                        .value(valueVote)
+                        .build());
+    }
+
     private void saveTagAndPost(List<String> tags, @NotNull int postId) {
         for (String tagRequest : tags) {
             Tag tag = tagRepository.findByName(tagRequest);
@@ -354,10 +416,12 @@ public class PostServiceImpl implements PostService {
     private Page<Post> getSortedPostsForModeration(int offset, int limit, String status) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = null;
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
+//        @NotNull
+//        int userId = userRepository.findByEmail(authCheckService.getLoggedInUser(auth)).getId();
         @NotNull
-        int userId = userRepository.findByEmail(authCheckService.getLoggedInUser(auth)).getId();
+        int userId = authCheckService.getAuthorizedUser().getId();
 
         if (status.equals("new")) {
             posts = postRepository.findPostsByIsActiveAndModerationStatus(IS_ACTIVE, ModerationStatus.NEW,
@@ -376,8 +440,8 @@ public class PostServiceImpl implements PostService {
     private Page<Post> getSortedMyPosts(int offset, int limit, String status) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = null;
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByEmail(authCheckService.getLoggedInUser(auth));
+        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = authCheckService.getAuthorizedUser();
 
         if (status.equals("inactive")) {
             posts = postRepository.findPostsByIsActiveAndUser((byte) 0, user, pageable);

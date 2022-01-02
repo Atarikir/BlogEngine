@@ -1,6 +1,7 @@
 package main.service;
 
 import main.api.request.CreatePostRequest;
+import main.api.request.PostModerationRequest;
 import main.api.response.*;
 
 import java.security.Principal;
@@ -26,4 +27,8 @@ public interface PostService {
     PostResponse getPostForModeration(int offset, int limit, String status);
 
     ResultErrorResponse editPost(Principal principal, CreatePostRequest createPostRequest, int id);
+
+    ResultErrorResponse likePost(PostModerationRequest postModerationRequest, Principal principal);
+
+    ResultErrorResponse dislikePost(PostModerationRequest postModerationRequest, Principal principal);
 }

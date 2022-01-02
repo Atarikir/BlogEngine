@@ -55,6 +55,13 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
+    public ResultErrorResponse getResultFalse() {
+        return ResultErrorResponse.builder()
+                .result(false)
+                .build();
+    }
+
+    @Override
     public ResultErrorResponse errorsRequest(ErrorResponse errors) {
         return ResultErrorResponse.builder()
                 .result(false)
@@ -198,9 +205,7 @@ public class GeneralServiceImpl implements GeneralService {
             return getResultTrue();
         }
 
-        return ResultErrorResponse.builder()
-                .result(false)
-                .build();
+        return getResultFalse();
     }
 
     private ModerationStatus getModerationStatus(PostModerationRequest postModerationRequest) {

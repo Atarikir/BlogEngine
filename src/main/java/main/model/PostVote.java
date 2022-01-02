@@ -1,14 +1,20 @@
 package main.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "post_votes")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostVote {
 
     @Id
@@ -29,7 +35,7 @@ public class PostVote {
 
     @Column(name = "time")
     @NotNull
-    private Date time;
+    private LocalDateTime time;
 
     @Column(name = "value")
     @NotNull

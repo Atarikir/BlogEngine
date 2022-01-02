@@ -16,6 +16,8 @@ public interface GeneralService {
 
     ResultErrorResponse getResultTrue();
 
+    ResultErrorResponse getResultFalse();
+
     ResultErrorResponse errorsRequest(ErrorResponse errors);
 
     Object uploadImage(MultipartFile image);

@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.api.request.CreatePostRequest;
+import main.api.request.PostModerationRequest;
 import main.api.response.PostDto;
 import main.api.response.PostResponse;
 import main.api.response.ResultErrorResponse;
@@ -94,6 +95,24 @@ public class ApiPostController {
                                                            @RequestBody CreatePostRequest createPostRequest,
                                                            @PathVariable("ID") int id) {
         ResultErrorResponse resultErrorResponse = postService.editPost(principal, createPostRequest, id);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
+    }
+
+    //to do - if the user is not logged in, issue a 401 error!!!
+    @PostMapping("/like")
+    @PreAuthorize("hasAnyAuthority('user:write')")
+    public ResponseEntity<ResultErrorResponse> likePost(@RequestBody PostModerationRequest postModerationRequest,
+                                                        Principal principal) {
+        ResultErrorResponse resultErrorResponse = postService.likePost(postModerationRequest, principal);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
+    }
+
+    //to do - if the user is not logged in, issue a 401 error!!!
+    @PostMapping("/dislike")
+    @PreAuthorize("hasAnyAuthority('user:write')")
+    public ResponseEntity<?> dislikePost(@RequestBody PostModerationRequest postModerationRequest,
+                                         Principal principal) {
+        ResultErrorResponse resultErrorResponse = postService.dislikePost(postModerationRequest, principal);
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 }

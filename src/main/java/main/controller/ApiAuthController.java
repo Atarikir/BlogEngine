@@ -57,4 +57,16 @@ public class ApiAuthController {
         AuthCheckResponse authCheckResponse = authCheckService.getLogoutUser(request);
         return new ResponseEntity<>(authCheckResponse, HttpStatus.OK);
     }
+
+    //not implemented!!!
+    @PostMapping("/restore")
+    public ResponseEntity<?> passwordRecovery() {
+        return null;
+    }
+
+    //not implemented!!!
+    @PostMapping("/password")
+    public ResponseEntity<?> changePassword() {
+        return null;
+    }
 }
