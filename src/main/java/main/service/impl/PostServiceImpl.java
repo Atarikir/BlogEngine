@@ -4,6 +4,7 @@ import main.api.request.CreatePostRequest;
 import main.api.request.PostModerationRequest;
 import main.api.response.*;
 import main.exceptions.NoFoundException;
+import main.exceptions.UnauthorizedException;
 import main.model.*;
 import main.model.enums.ModerationStatus;
 import main.model.enums.SortingMode;
@@ -309,10 +310,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResultErrorResponse likePost(PostModerationRequest postModerationRequest, Principal principal) {
-
-//        if (principal == null) {
-//            throw new UnauthorizedException();
-//        }
+        if (principal == null) {
+            throw new UnauthorizedException();
+        }
 
 //        if (!authCheckService.isUserAuthorize()) {
 //            throw new UnauthorizedException();

@@ -5,6 +5,7 @@ import main.api.request.PostModerationRequest;
 import main.api.response.PostDto;
 import main.api.response.PostResponse;
 import main.api.response.ResultErrorResponse;
+import main.exceptions.UnauthorizedException;
 import main.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -103,6 +104,9 @@ public class ApiPostController {
     @PreAuthorize("hasAnyAuthority('user:write')")
     public ResponseEntity<ResultErrorResponse> likePost(@RequestBody PostModerationRequest postModerationRequest,
                                                         Principal principal) {
+        if (principal == null) {
+            throw new UnauthorizedException();
+        }
         ResultErrorResponse resultErrorResponse = postService.likePost(postModerationRequest, principal);
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }

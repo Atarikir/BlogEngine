@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import javax.validation.constraints.NotNull;
 
 @Repository
-public interface PostVoteRepository extends JpaRepository<PostVote, Integer> {
+public interface PostVoteRepository extends JpaRepository<PostVote, Long> {
     long countAllByValue(@NotNull byte value);
 
     PostVote findByUserAndPost(User user, Post post);

@@ -25,6 +25,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     long count();
 
+    long countByUser(User user);
+
+    @Query("SELECT SUM(p.viewCount) FROM Post p WHERE p.user = ?1")
+    long getMyViewsCount(User user);
+
     @Query("SELECT SUM(p.viewCount) FROM Post p")
     long getAllViewsCount();
 
@@ -74,7 +79,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     Post findById(int id);
 
-    //Запрос не работает
-    @Query(value = "SELECT p.id FROM posts p ORDER BY p.time ASC LIMIT 1", nativeQuery = true)
-    Post getFirstPublicationTime();
+    @Query(value = "SELECT p.time FROM posts p ORDER BY p.time ASC LIMIT 1", nativeQuery = true)
+    LocalDateTime getFirstPublicationTime();
 }

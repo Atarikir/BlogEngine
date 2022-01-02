@@ -12,4 +12,6 @@ public interface SettingsService {
     void writeGlobalSettings(SettingsResponse settingsResponse, Principal principal);
 
     StatisticsResponse getStatisticsAllPosts(Principal principal);
+
+    StatisticsResponse getMyStats(Principal principal);
 }

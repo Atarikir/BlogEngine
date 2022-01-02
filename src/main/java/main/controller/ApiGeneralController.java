@@ -58,13 +58,6 @@ public class ApiGeneralController {
         return new ResponseEntity<>(calendarResponse, HttpStatus.OK);
     }
 
-    //not implemented!!!
-    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<Object> uploadFile(MultipartFile image) {
-        return new ResponseEntity<>(generalService.uploadImage(image), HttpStatus.OK);
-    }
-
     @PostMapping("/comment")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<CommentDto> addComment(@RequestBody CreateCommentRequest createCommentRequest,
@@ -82,6 +75,13 @@ public class ApiGeneralController {
     }
 
     //not implemented!!!
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<Object> uploadFile(MultipartFile image) {
+        return new ResponseEntity<>(generalService.uploadImage(image), HttpStatus.OK);
+    }
+
+    //not implemented!!!
     @PostMapping("/profile/my")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<?> editingMyProfile() {
@@ -91,11 +91,11 @@ public class ApiGeneralController {
     //not implemented!!!
     @GetMapping("/statistics/my")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> myStats() {
-        return null;
+    public ResponseEntity<?> myStats(Principal principal) {
+        StatisticsResponse statisticsResponse = settingsService.getMyStats(principal);
+        return new ResponseEntity<>(statisticsResponse, HttpStatus.OK);
     }
 
-    //not implemented!!!
     @GetMapping("/statistics/all")
     public ResponseEntity<StatisticsResponse> blogWideStatistics(Principal principal) {
         StatisticsResponse statisticsResponse = settingsService.getStatisticsAllPosts(principal);

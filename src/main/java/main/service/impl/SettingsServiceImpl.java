@@ -4,7 +4,6 @@ import main.api.response.SettingsResponse;
 import main.api.response.StatisticsResponse;
 import main.exceptions.UnauthorizedException;
 import main.model.GlobalSetting;
-import main.model.Post;
 import main.model.User;
 import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
@@ -102,6 +101,20 @@ public class SettingsServiceImpl implements SettingsService {
     }
 
     @Override
+    public StatisticsResponse getMyStats(Principal principal) {
+
+        User user = userRepository.findByEmail(principal.getName());
+
+        long postCount = postRepository.countByUser(user);
+        long likesCount = 0;
+        long dislikesCount = 0; //postVoteRepository.countAllByValue((byte) -1);
+        long viewsCount = postRepository.getMyViewsCount(user);
+        long firstPublication = 0;// = firstPublicationTime.getTime().toEpochSecond(ZoneOffset.UTC);
+
+        return getStatisticsResponse(postCount, likesCount, dislikesCount, viewsCount, firstPublication);
+    }
+
+    @Override
     public StatisticsResponse getStatisticsAllPosts(Principal principal) {
         GlobalSetting globalSetting = globalSettingRepository.findByCode(statisticsIsPublic);
 
@@ -112,13 +125,18 @@ public class SettingsServiceImpl implements SettingsService {
             }
         }
 
-        Post firstPublicationTime = postRepository.getFirstPublicationTime();
-
         long postCount = postRepository.count();
         long likesCount = postVoteRepository.countAllByValue((byte) 1);
         long dislikesCount = postVoteRepository.countAllByValue((byte) -1);
         long viewsCount = postRepository.getAllViewsCount();
-        long firstPublication = firstPublicationTime.getTime().toEpochSecond(ZoneOffset.UTC);
+        long firstPublication = postRepository.getFirstPublicationTime().toEpochSecond(ZoneOffset.UTC);
+
+        return getStatisticsResponse(postCount, likesCount, dislikesCount, viewsCount, firstPublication);
+
+    }
+
+    private StatisticsResponse getStatisticsResponse(long postCount, long likesCount, long dislikesCount,
+                                                     long viewsCount, long firstPublication) {
 
         return StatisticsResponse.builder()
                 .postsCount(postCount)
@@ -127,7 +145,6 @@ public class SettingsServiceImpl implements SettingsService {
                 .viewsCount(viewsCount)
                 .firstPublication(firstPublication)
                 .build();
-
     }
 
     private List<GlobalSetting> getAllGlobalSettings() {
