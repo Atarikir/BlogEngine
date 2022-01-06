@@ -84,14 +84,13 @@ public class ApiGeneralController {
     //not implemented!!!
     @PostMapping("/profile/my")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> editingMyProfile() {
+    public ResponseEntity<?> editingMyProfile()git {
         return null;
     }
 
-    //not implemented!!!
     @GetMapping("/statistics/my")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> myStats(Principal principal) {
+    public ResponseEntity<StatisticsResponse> myStats(Principal principal) {
         StatisticsResponse statisticsResponse = settingsService.getMyStats(principal);
         return new ResponseEntity<>(statisticsResponse, HttpStatus.OK);
     }

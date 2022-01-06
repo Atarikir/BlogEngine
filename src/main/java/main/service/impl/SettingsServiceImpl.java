@@ -4,7 +4,10 @@ import main.api.response.SettingsResponse;
 import main.api.response.StatisticsResponse;
 import main.exceptions.UnauthorizedException;
 import main.model.GlobalSetting;
+import main.model.Post;
+import main.model.PostVote;
 import main.model.User;
+import main.model.enums.ModerationStatus;
 import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
@@ -103,13 +106,16 @@ public class SettingsServiceImpl implements SettingsService {
     @Override
     public StatisticsResponse getMyStats(Principal principal) {
 
+        final byte IS_ACTIVE = 1;
         User user = userRepository.findByEmail(principal.getName());
+        List<Post> postList = postRepository.findPostsByIsActiveAndModerationStatusAndUser(IS_ACTIVE,
+                ModerationStatus.ACCEPTED, user);
 
         long postCount = postRepository.countByUser(user);
-        long likesCount = 0;
-        long dislikesCount = 0; //postVoteRepository.countAllByValue((byte) -1);
+        long likesCount = getCountVotes(postList, (byte) 1);
+        long dislikesCount = getCountVotes(postList, (byte) -1);
         long viewsCount = postRepository.getMyViewsCount(user);
-        long firstPublication = 0;// = firstPublicationTime.getTime().toEpochSecond(ZoneOffset.UTC);
+        long firstPublication = postRepository.getMyFirstPublicationTime(user).toEpochSecond(ZoneOffset.UTC);
 
         return getStatisticsResponse(postCount, likesCount, dislikesCount, viewsCount, firstPublication);
     }
@@ -133,6 +139,15 @@ public class SettingsServiceImpl implements SettingsService {
 
         return getStatisticsResponse(postCount, likesCount, dislikesCount, viewsCount, firstPublication);
 
+    }
+
+    private long getCountVotes(List<Post> postList, byte voteValue){
+        return postList.stream()
+                .map(Post::getPostVotes)
+                .map(postVotes -> postVotes.stream()
+                        .map(PostVote::getValue)
+                        .filter(v -> v == voteValue).count())
+                .reduce(0L, Long::sum);
     }
 
     private StatisticsResponse getStatisticsResponse(long postCount, long likesCount, long dislikesCount,

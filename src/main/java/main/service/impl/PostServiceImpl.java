@@ -42,9 +42,6 @@ public class PostServiceImpl implements PostService {
     @Value("${settings.value.true}")
     private String settingValueTrue;
 
-    @Value("${settings.value.false}")
-    private String settingValueFalse;
-
     private final Tag2PostRepository tag2PostRepository;
     private final TagRepository tagRepository;
     private final PostRepository postRepository;

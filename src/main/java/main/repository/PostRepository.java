@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -81,4 +82,10 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     @Query(value = "SELECT p.time FROM posts p ORDER BY p.time ASC LIMIT 1", nativeQuery = true)
     LocalDateTime getFirstPublicationTime();
+
+    @Query(value = "SELECT p.time FROM posts p WHERE p.is_active = '1' AND p.moderation_status = 'ACCEPTED' AND " +
+            "p.time <= NOW() AND p.user_id = :user_id ORDER BY p.`time` ASC LIMIT 1", nativeQuery = true)
+    LocalDateTime getMyFirstPublicationTime(@Param("user_id") User user);
+
+    List<Post> findPostsByIsActiveAndModerationStatusAndUser(byte isActive, ModerationStatus moderationStatus, User user);
 }
