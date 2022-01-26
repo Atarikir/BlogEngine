@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 
 @RestController
@@ -77,14 +78,14 @@ public class ApiGeneralController {
     //not implemented!!!
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<Object> uploadFile(MultipartFile image) {
+    public ResponseEntity<Object> uploadFile(@RequestParam MultipartFile image) throws IOException {
         return new ResponseEntity<>(generalService.uploadImage(image), HttpStatus.OK);
     }
 
     //not implemented!!!
     @PostMapping("/profile/my")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> editingMyProfile()git {
+    public ResponseEntity<?> editingMyProfile() {
         return null;
     }
 

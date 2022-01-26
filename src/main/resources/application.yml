@@ -34,7 +34,7 @@ blog:
 ##captcha config
 captcha.deleteLimitTime: 1
 
-upload.dir: /upload
+upload.dir: ./upload
 
 settings:
   code:

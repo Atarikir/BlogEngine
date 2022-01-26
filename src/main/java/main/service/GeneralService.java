@@ -7,6 +7,7 @@ import main.api.response.ErrorResponse;
 import main.api.response.ResultErrorResponse;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ public interface GeneralService {
 
     ResultErrorResponse errorsRequest(ErrorResponse errors);
 
-    Object uploadImage(MultipartFile image);
+    Object uploadImage(MultipartFile image) throws IOException;
 
     CommentDto createComment(Principal principal, CreateCommentRequest createCommentRequest);
 

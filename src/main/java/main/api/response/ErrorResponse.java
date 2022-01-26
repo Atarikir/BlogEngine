@@ -14,4 +14,5 @@ public class ErrorResponse {
     private String captcha;
     private String title;
     private String text;
+    private String image;
 }

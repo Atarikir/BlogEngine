@@ -311,11 +311,6 @@ public class PostServiceImpl implements PostService {
             throw new UnauthorizedException();
         }
 
-//        if (!authCheckService.isUserAuthorize()) {
-//            throw new UnauthorizedException();
-//        } else {
-//            User currentUser = authCheckService.getAuthorizedUser();
-        //}
         String email = principal.getName();
         int id = postModerationRequest.getPostId();
         byte valueVote = 1;

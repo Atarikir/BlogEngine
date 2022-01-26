@@ -15,6 +15,7 @@ import main.repository.UserRepository;
 import main.service.SettingsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.time.ZoneOffset;
@@ -72,6 +73,7 @@ public class SettingsServiceImpl implements SettingsService {
     }
 
     @Override
+    @Transactional
     public void writeGlobalSettings(SettingsResponse settingsRequest, Principal principal) {
         User user = userRepository.findByEmail(principal.getName());
 

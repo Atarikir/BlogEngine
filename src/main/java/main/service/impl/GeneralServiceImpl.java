@@ -15,14 +15,20 @@ import main.repository.PostCommentRepository;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.service.GeneralService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -62,83 +68,60 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public ResultErrorResponse errorsRequest(ErrorResponse errors) {
+    public ResultErrorResponse errorsRequest(ErrorResponse error) {
         return ResultErrorResponse.builder()
                 .result(false)
-                .errors(errors)
+                .errors(error)
                 .build();
     }
 
     @Override
-    public Object uploadImage(MultipartFile image) {
+    public Object uploadImage(MultipartFile image) throws IOException {
 
-//        try {
-//            if (image != null) {
-////            File uploadImage = new File(uploadDir);
-////
-////            if (!uploadImage.exists()) {
-////                uploadImage.mkdir();
-////            }
-//
-//                String uuidFile = UUID.randomUUID().toString();
-//                String fileName = uuidFile.substring(24) + "." + image.getOriginalFilename();
-//                String resultFileName = uploadDir + "/" + uuidFile.substring(9, 13) + "/" + uuidFile.substring(14, 18) + "/" +
-//                        uuidFile.substring(19, 23) + fileName;
-//                String filePath = "/home/pandora/Pictures/";
-//
-//                File path = new File(filePath);
-//
-//                if (!path.exists()) {
-//                    path.mkdir();
-//                }
-//
-//                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(
-//                        new File(filePath + fileName)));
-//
-//                out.write(image.getBytes());
-//                out.flush();
-//                out.close();
-//
-//                return resultFileName;
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        String textErrorExtension = "Файл не формата изображение jpg, png";
+        String textErrorSize = "Размер файла превышает допустимый размер";
 
-        return null;
+        String originalFileName = image.getOriginalFilename();
+        String fileSuffix = Objects.requireNonNull(originalFileName)
+                .substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
 
-//                @PostMapping("/upload")
-//        public ResponseVO<String> upload(@RequestParam("image") MultipartFile image) {
-//            ResponseVO<String> responseVO = new ResponseVO<>();
-//            try {
-//                if (image.isEmpty()) {
-//                    responseVO.setCode(1);
-//                    responseVO.setMessage(«Файл пуст»);
-//                } else {
-//                    String dotExtendName = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));// Получить расширение
-//                    String fileName = UUID.randomUUID().toString().replace("-", "") + dotExtendName;// Имя UUID + расширение.
-//                    String filePath = "D:/image/";
-//                    // Создаем каталог, чтобы не найти путь
-//                    File path = new File(filePath);
-//                    if (!path.exists()) {
-//                        path.mkdirs();
-//                    }
-//                    // Загрузить
-//                    BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(filePath + fileName)));
-//                    out.write(image.getBytes());
-//                    out.flush();
-//                    out.close();
-//                    responseVO.setCode(0);
-//                    responseVO.setMessage(«Файл загружен успешно»);
-//                    responseVO.setData(fileName);// Имя файла echo
-//                }
-//            } catch (Exception ex) {
-//                responseVO.setCode(2);
-//                responseVO.setMessage(«Ошибка загрузки файла» + ex.getMessage());
-//                // Запись журнала
-//            }
-//            return responseVO;
-//        }
+        if (image.getSize() > 5_000_000) {
+            return errorsRequest(ErrorResponse
+                    .builder()
+                    .image(textErrorSize)
+                    .build());
+        }
+
+        if (!fileSuffix.equalsIgnoreCase("jpg") && !fileSuffix.equalsIgnoreCase("png")) {
+            return errorsRequest(ErrorResponse
+                    .builder()
+                    .image(textErrorExtension)
+                    .build());
+        }
+
+        String generatedString = RandomStringUtils.randomAlphabetic(6).toLowerCase();
+        String newFileName = RandomStringUtils.randomNumeric(5) + (".") + fileSuffix;
+
+        StringBuilder path = new StringBuilder();
+        path
+                .append(uploadDir)
+                .append(File.separator)
+                .append(generatedString, 0, 2)
+                .append(File.separator)
+                .append(generatedString, 2, 4)
+                .append(File.separator)
+                .append(generatedString.substring(4))
+                .append(File.separator)
+                .append(newFileName);
+
+        File destFile = new File(path.toString());
+
+        if (destFile.mkdirs()) {
+            BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+            ImageIO.write(bufferedImage, fileSuffix, destFile);
+        }
+
+        return path.substring(1);
 
 //        @Service
 //        public class FileService {
@@ -181,7 +164,7 @@ public class GeneralServiceImpl implements GeneralService {
             }
         }
 
-        if (text.length() < minLengthComment || text.isBlank()) {
+        if (text.length() < minLengthComment) { //|| text.isBlank()) {
             throw new TextCommentNotFoundException(textError);
         }
 
