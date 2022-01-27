@@ -6,7 +6,8 @@ import main.api.response.CommentDto;
 import main.api.response.ErrorResponse;
 import main.api.response.ResultErrorResponse;
 import main.exceptions.BedRequestException;
-import main.exceptions.TextCommentNotFoundException;
+import main.exceptions.ImageBadRequestException;
+import main.exceptions.TextCommentBadRequestException;
 import main.model.Post;
 import main.model.PostComment;
 import main.model.User;
@@ -16,7 +17,6 @@ import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.service.GeneralService;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,8 +34,11 @@ import java.util.Optional;
 @Service
 public class GeneralServiceImpl implements GeneralService {
 
-    @Value("${upload.dir}")
+    @Value("${file.uploadDir}")
     private String uploadDir;
+
+    @Value("${file.maxFileSize}")
+    private int maxFileSize;
 
     private final PostCommentRepository postCommentRepository;
     private final PostRepository postRepository;
@@ -77,26 +80,18 @@ public class GeneralServiceImpl implements GeneralService {
 
     @Override
     public Object uploadImage(MultipartFile image) throws IOException {
-
         String textErrorExtension = "Файл не формата изображение jpg, png";
         String textErrorSize = "Размер файла превышает допустимый размер";
-
         String originalFileName = image.getOriginalFilename();
         String fileSuffix = Objects.requireNonNull(originalFileName)
                 .substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
 
-        if (image.getSize() > 5_000_000) {
-            return errorsRequest(ErrorResponse
-                    .builder()
-                    .image(textErrorSize)
-                    .build());
+        if (image.getSize() > maxFileSize) {
+            throw new ImageBadRequestException(textErrorSize);
         }
 
         if (!fileSuffix.equalsIgnoreCase("jpg") && !fileSuffix.equalsIgnoreCase("png")) {
-            return errorsRequest(ErrorResponse
-                    .builder()
-                    .image(textErrorExtension)
-                    .build());
+            throw new ImageBadRequestException(textErrorExtension);
         }
 
         String generatedString = RandomStringUtils.randomAlphabetic(6).toLowerCase();
@@ -122,26 +117,6 @@ public class GeneralServiceImpl implements GeneralService {
         }
 
         return path.substring(1);
-
-//        @Service
-//        public class FileService {
-//
-//            @Value("${app.upload.dir:${user.home}}")
-//            public String uploadDir;
-//
-//            public void uploadFile(MultipartFile image) {
-//
-//                try {
-//                    Path copyLocation = Paths
-//                            .get(uploadDir + File.separator + StringUtils.cleanPath(image.getOriginalFilename()));
-//                    Files.copy(image.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    throw new FileStorageException("Could not store image " + image.getOriginalFilename()
-//                            + ". Please try again!");
-//                }
-//            }
-//        }
     }
 
     @Override
@@ -150,7 +125,7 @@ public class GeneralServiceImpl implements GeneralService {
         String textError = "Текст комментария не задан или слишком короткий";
         User user = userRepository.findByEmail(principal.getName());
         Post post = postRepository.findById(createCommentRequest.getPostId());
-        String text = Jsoup.parse(createCommentRequest.getText()).text();
+        String text = createCommentRequest.getText();
         Integer parentId = createCommentRequest.getParentId();
 
         if (post == null) {
@@ -164,8 +139,8 @@ public class GeneralServiceImpl implements GeneralService {
             }
         }
 
-        if (text.length() < minLengthComment) { //|| text.isBlank()) {
-            throw new TextCommentNotFoundException(textError);
+        if (text.length() < minLengthComment || text.isBlank()) {
+            throw new TextCommentBadRequestException(textError);
         }
 
         PostComment postComment = saveComment(createCommentRequest, post, user);
@@ -189,6 +164,20 @@ public class GeneralServiceImpl implements GeneralService {
         }
 
         return getResultFalse();
+    }
+
+    @Override
+    public ResultErrorResponse editMyProfile(MultipartFile photo, String name, String email, String password,
+                                             int removePhoto) {
+        userRepository.save(
+                User.builder()
+                        .photo()
+                        .name()
+                        .email()
+                        .password()
+                        .build());
+
+        return getResultTrue();
     }
 
     private ModerationStatus getModerationStatus(PostModerationRequest postModerationRequest) {

@@ -26,4 +26,6 @@ public interface GeneralService {
     CommentDto createComment(Principal principal, CreateCommentRequest createCommentRequest);
 
     ResultErrorResponse postModeration(PostModerationRequest postModerationRequest, Principal principal);
+
+    ResultErrorResponse editMyProfile(MultipartFile photo, String name, String email, String password, int removePhoto);
 }

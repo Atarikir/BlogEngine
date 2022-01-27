@@ -75,7 +75,6 @@ public class ApiGeneralController {
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
-    //not implemented!!!
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Object> uploadFile(@RequestParam MultipartFile image) throws IOException {
@@ -83,10 +82,15 @@ public class ApiGeneralController {
     }
 
     //not implemented!!!
-    @PostMapping("/profile/my")
+    @PostMapping(value = "/profile/my", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> editingMyProfile() {
-        return null;
+    public ResponseEntity<ResultErrorResponse> editingMyProfile(@RequestParam MultipartFile photo,
+                                                                @RequestParam String name,
+                                                                @RequestParam String email,
+                                                                @RequestParam String password,
+                                                                @RequestParam int removePhoto) {
+        ResultErrorResponse resultErrorResponse = generalService.editMyProfile(photo, name, email, password, removePhoto);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
     @GetMapping("/statistics/my")

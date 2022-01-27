@@ -389,7 +389,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private boolean checkText(CreatePostRequest createPostRequest) {
-        return Jsoup.parse(createPostRequest.getText()).text().length() < MIN_LENGTH_TEXT;
+        return createPostRequest.getText().length() < MIN_LENGTH_TEXT;
     }
 
     private LocalDateTime getTimeCreatePost(long timestamp) {

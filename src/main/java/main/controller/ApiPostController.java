@@ -64,11 +64,11 @@ public class ApiPostController {
     @GetMapping("/moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<PostResponse> getPostsForModeration(@RequestParam(defaultValue = "0", required = false)
-                                                                          int offset,
+                                                                      int offset,
                                                               @RequestParam(defaultValue = "10", required = false)
                                                                       int limit,
                                                               @RequestParam() String status) {
-        PostResponse postResponse = postService.getPostForModeration(offset,limit, status);
+        PostResponse postResponse = postService.getPostForModeration(offset, limit, status);
         return new ResponseEntity<>(postResponse, HttpStatus.OK);
     }
 
@@ -110,8 +110,8 @@ public class ApiPostController {
     //to do - if the user is not logged in, issue a 401 error!!!
     @PostMapping("/dislike")
     @PreAuthorize("hasAnyAuthority('user:write')")
-    public ResponseEntity<?> dislikePost(@RequestBody PostModerationRequest postModerationRequest,
-                                         Principal principal) {
+    public ResponseEntity<ResultErrorResponse> dislikePost(@RequestBody PostModerationRequest postModerationRequest,
+                                                           Principal principal) {
         ResultErrorResponse resultErrorResponse = postService.dislikePost(postModerationRequest, principal);
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
