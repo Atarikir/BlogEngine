@@ -2,6 +2,7 @@ package main.controller;
 
 import main.api.request.CreateCommentRequest;
 import main.api.request.PostModerationRequest;
+import main.api.request.ProfileRequest;
 import main.api.response.*;
 import main.service.GeneralService;
 import main.service.PostService;
@@ -81,15 +82,20 @@ public class ApiGeneralController {
         return new ResponseEntity<>(generalService.uploadImage(image), HttpStatus.OK);
     }
 
-    //not implemented!!!
+    @PostMapping("/profile/my")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<ResultErrorResponse> editingMyProfileWithoutPhoto(@RequestBody ProfileRequest profileRequest,
+                                                                Principal principal) throws IOException {
+        ResultErrorResponse resultErrorResponse = generalService.editMyProfile(profileRequest, principal);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
+    }
+
     @PostMapping(value = "/profile/my", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<ResultErrorResponse> editingMyProfile(@RequestParam MultipartFile photo,
-                                                                @RequestParam String name,
-                                                                @RequestParam String email,
-                                                                @RequestParam String password,
-                                                                @RequestParam int removePhoto) {
-        ResultErrorResponse resultErrorResponse = generalService.editMyProfile(photo, name, email, password, removePhoto);
+    public ResponseEntity<ResultErrorResponse> editingMyProfileWithPhoto(@RequestParam MultipartFile photo,
+                                                                @ModelAttribute ProfileRequest profileRequest,
+                                                                Principal principal) throws IOException {
+        ResultErrorResponse resultErrorResponse = generalService.editMyProfile(photo, profileRequest, principal);
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 

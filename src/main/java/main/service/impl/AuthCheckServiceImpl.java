@@ -16,13 +16,12 @@ import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.service.AuthCheckService;
-import main.service.GeneralService;
+import main.service.UtilityService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,22 +37,40 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     @Value("${settings.code.multiuserMode}")
     private String multiuserMode;
 
+    @Value("${user.namePattern}")
+    private String namePattern;
+
+    @Value("${user.minLengthPassword}")
+    private int minLengthPassword;
+
+    @Value("${user.errorEmail}")
+    private String errorEmail;
+
+    @Value("${user.errorName}")
+    private String errorName;
+
+    @Value("${user.errorPassword}")
+    private String errorPassword;
+
+    @Value("${user.errorCaptcha}")
+    private String errorCaptcha;
+
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final AuthenticationManager authenticationManager;
-    private final GeneralService generalService;
+    private final UtilityService utilityService;
     private final GlobalSettingRepository globalSettingRepository;
 
     public AuthCheckServiceImpl(UserRepository userRepository,
                                 PostRepository postRepository, CaptchaCodeRepository captchaCodeRepository,
-                                AuthenticationManager authenticationManager, GeneralService generalService,
-                                GlobalSettingRepository globalSettingRepository) {
+                                AuthenticationManager authenticationManager,
+                                UtilityService utilityService, GlobalSettingRepository globalSettingRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.captchaCodeRepository = captchaCodeRepository;
         this.authenticationManager = authenticationManager;
-        this.generalService = generalService;
+        this.utilityService = utilityService;
         this.globalSettingRepository = globalSettingRepository;
     }
 
@@ -74,7 +91,8 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     public AuthCheckResponse getLoginUser(LoginRequest loginRequest) {
         User currentUser = userRepository.findByEmail(loginRequest.getEmail());
 
-        if (currentUser == null || !getEncoder().matches(loginRequest.getPassword(), currentUser.getPassword())) {
+        if (currentUser == null || !utilityService.getEncoder().matches(loginRequest.getPassword(),
+                currentUser.getPassword())) {
             return new AuthCheckResponse();
         }
 
@@ -108,11 +126,6 @@ public class AuthCheckServiceImpl implements AuthCheckService {
 
     @Override
     public ResultErrorResponse createUser(AuthRegRequest authRegRequest) {
-        int minLengthPassword = 6;
-        String errorEmail = "Этот e-mail уже зарегистрирован";
-        String errorName = "Имя указано неверно";
-        String errorPassword = "Пароль короче 6-ти символов";
-        String errorCaptcha = "Код с картинки введён неверно";
         String name = authRegRequest.getName();
         String password = authRegRequest.getPassword();
         CaptchaCode captchaCodeDB = captchaCodeRepository.findByCode(authRegRequest.getCaptcha());
@@ -124,28 +137,28 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         }
 
         if (user != null) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .email(errorEmail)
                             .build());
         }
 
-        if (!name.matches("^[а-яА-ЯёЁa-zA-Z0-9]{2,20}$")) {
-            return generalService.errorsRequest(
+        if (!name.matches(namePattern)) {
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .name(errorName)
                             .build());
         }
 
         if (password.length() < minLengthPassword) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .password(errorPassword)
                             .build());
         }
 
         if (captchaCodeDB == null || !captchaCodeDB.getSecretCode().equals(authRegRequest.getCaptchaSecret())) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .captcha(errorCaptcha)
                             .build()
@@ -155,14 +168,14 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         userRepository.save(
                 User.builder()
                         .isModerator((byte) 0)
-                        .regTime(generalService.getTimeNow())
+                        .regTime(utilityService.getTimeNow())
                         .name(name)
                         .email(authRegRequest.getEmail())
-                        .password(encodeBCrypt(authRegRequest.getPassword()))
+                        .password(utilityService.encodeBCrypt(authRegRequest.getPassword()))
                         .build()
         );
 
-        return generalService.getResultTrue();
+        return utilityService.getResultTrue();
     }
 
     @Override
@@ -200,14 +213,6 @@ public class AuthCheckServiceImpl implements AuthCheckService {
                 .moderationCount(currentUser.isModerator() ? getModerationCount() : 0)
                 .settings(currentUser.isModerator())
                 .build();
-    }
-
-    private String encodeBCrypt(String password) {
-        return getEncoder().encode(password);
-    }
-
-    private BCryptPasswordEncoder getEncoder() {
-        return new BCryptPasswordEncoder(12);
     }
 
     private int getModerationCount() {

@@ -4,14 +4,13 @@ import main.api.request.CreatePostRequest;
 import main.api.request.PostModerationRequest;
 import main.api.response.*;
 import main.exceptions.NoFoundException;
-import main.exceptions.UnauthorizedException;
 import main.model.*;
 import main.model.enums.ModerationStatus;
 import main.model.enums.SortingMode;
 import main.repository.*;
 import main.service.AuthCheckService;
-import main.service.GeneralService;
 import main.service.PostService;
+import main.service.UtilityService;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -47,9 +46,9 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AuthCheckService authCheckService;
-    private final GeneralService generalService;
     private final GlobalSettingRepository globalSettingRepository;
     private final PostVoteRepository postVoteRepository;
+    private final UtilityService utilityService;
     private static final byte IS_ACTIVE = 1;
     private static final int MIN_LENGTH_TITLE = 3;
     private static final int MIN_LENGTH_TEXT = 50;
@@ -59,16 +58,16 @@ public class PostServiceImpl implements PostService {
 
     public PostServiceImpl(Tag2PostRepository tag2PostRepository, TagRepository tagRepository,
                            PostRepository postRepository, UserRepository userRepository,
-                           AuthCheckService authCheckService, GeneralService generalService,
-                           GlobalSettingRepository globalSettingRepository, PostVoteRepository postVoteRepository) {
+                           AuthCheckService authCheckService, GlobalSettingRepository globalSettingRepository,
+                           PostVoteRepository postVoteRepository, UtilityService utilityService) {
         this.tag2PostRepository = tag2PostRepository;
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.authCheckService = authCheckService;
-        this.generalService = generalService;
         this.globalSettingRepository = globalSettingRepository;
         this.postVoteRepository = postVoteRepository;
+        this.utilityService = utilityService;
     }
 
     @Override
@@ -99,12 +98,12 @@ public class PostServiceImpl implements PostService {
         Page<Post> posts;
 
         if (!query.isBlank()) {
-            posts = postRepository.getPostByQuery(IS_ACTIVE, ModerationStatus.ACCEPTED, generalService.getTimeNow(),
+            posts = postRepository.getPostByQuery(IS_ACTIVE, ModerationStatus.ACCEPTED, utilityService.getTimeNow(),
                     query, pageable);
         } else {
             pageable = PageRequest.of(page, limit, Sort.by("time").descending());
             posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE,
-                    ModerationStatus.ACCEPTED, generalService.getTimeNow(), pageable);
+                    ModerationStatus.ACCEPTED, utilityService.getTimeNow(), pageable);
         }
 
         return getPostResponse(posts);
@@ -112,20 +111,20 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public CalendarResponse getPostsCountByYear(int year) {
-        int currentYear = generalService.getTimeNow().getYear();
+        int currentYear = utilityService.getTimeNow().getYear();
 
         if (year == 0) {
             year = currentYear;
         }
 
         List<Integer> listYears = postRepository
-                .getYears(IS_ACTIVE, ModerationStatus.ACCEPTED, generalService.getTimeNow())
+                .getYears(IS_ACTIVE, ModerationStatus.ACCEPTED, utilityService.getTimeNow())
                 .stream()
                 .sorted()
                 .collect(Collectors.toList());
 
         List<Object[]> postsByYear = postRepository.getPostCountInYearGroupByDate(IS_ACTIVE, ModerationStatus.ACCEPTED,
-                generalService.getTimeNow(), year);
+                utilityService.getTimeNow(), year);
         Map<String, Long> mapPosts = new TreeMap<>();
 
         for (Object[] post : postsByYear) {
@@ -145,7 +144,7 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostByDate(int offset, int limit, String date) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = postRepository.getPostByDate(IS_ACTIVE, ModerationStatus.ACCEPTED,
-                generalService.getTimeNow(), date, pageable);
+                utilityService.getTimeNow(), date, pageable);
 
         return getPostResponse(posts);
     }
@@ -154,7 +153,7 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostByTag(int offset, int limit, String tag) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = postRepository.getPostByTag(IS_ACTIVE, ModerationStatus.ACCEPTED,
-                generalService.getTimeNow(), tag, pageable);
+                utilityService.getTimeNow(), tag, pageable);
 
         return getPostResponse(posts);
     }
@@ -215,7 +214,7 @@ public class PostServiceImpl implements PostService {
         }
 
         if (checkTitle(createPostRequest)) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .title(ERROR_TITLE)
                             .build()
@@ -223,7 +222,7 @@ public class PostServiceImpl implements PostService {
         }
 
         if (checkText(createPostRequest)) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .text(ERROR_TEXT)
                             .build()
@@ -245,7 +244,7 @@ public class PostServiceImpl implements PostService {
 
         saveTagAndPost(tags, post.getId());
 
-        return generalService.getResultTrue();
+        return utilityService.getResultTrue();
     }
 
     @Override
@@ -259,14 +258,14 @@ public class PostServiceImpl implements PostService {
         }
 
         if (checkTitle(createPostRequest)) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .title(ERROR_TITLE)
                             .build());
         }
 
         if (checkText(createPostRequest)) {
-            return generalService.errorsRequest(
+            return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .text(ERROR_TEXT)
                             .build());
@@ -302,19 +301,23 @@ public class PostServiceImpl implements PostService {
             saveTagAndPost(tags, currentPost.getId());
         }
 
-        return generalService.getResultTrue();
+        return utilityService.getResultTrue();
     }
 
     @Override
     public ResultErrorResponse likePost(PostModerationRequest postModerationRequest, Principal principal) {
-        if (principal == null) {
-            throw new UnauthorizedException();
-        }
+//        if (principal == null) {
+//            throw new UnauthorizedException();
+//        }
+
+//        if (!authCheckService.isUserAuthorize()) {
+//            throw new UnauthorizedException();
+//        }
 
         String email = principal.getName();
         int id = postModerationRequest.getPostId();
         byte valueVote = 1;
-        
+
         return addValueVote(email, id, valueVote);
     }
 
@@ -335,15 +338,15 @@ public class PostServiceImpl implements PostService {
 
         if (postVote == null) {
             save(currentUser, currentPost, valueVote);
-            resultErrorResponse = generalService.getResultTrue();
+            resultErrorResponse = utilityService.getResultTrue();
         } else {
             if (postVote.getValue() == valueVote) {
-                resultErrorResponse = generalService.getResultFalse();
+                resultErrorResponse = utilityService.getResultFalse();
             } else {
                 postVote.setValue(valueVote);
-                postVote.setTime(generalService.getTimeNow());
+                postVote.setTime(utilityService.getTimeNow());
                 postVoteRepository.save(postVote);
-                resultErrorResponse = generalService.getResultTrue();
+                resultErrorResponse = utilityService.getResultTrue();
             }
         }
 
@@ -355,7 +358,7 @@ public class PostServiceImpl implements PostService {
                 PostVote.builder()
                         .user(user)
                         .post(post)
-                        .time(generalService.getTimeNow())
+                        .time(utilityService.getTimeNow())
                         .value(valueVote)
                         .build());
     }
@@ -396,8 +399,8 @@ public class PostServiceImpl implements PostService {
         LocalDateTime timeCreatePost;
         LocalDateTime postRequestTime = convertTimestampToLocalDateTime(timestamp);
 
-        if (postRequestTime.isBefore(generalService.getTimeNow())) {
-            timeCreatePost = generalService.getTimeNow();
+        if (postRequestTime.isBefore(utilityService.getTimeNow())) {
+            timeCreatePost = utilityService.getTimeNow();
         } else {
             timeCreatePost = postRequestTime;
         }
@@ -459,17 +462,17 @@ public class PostServiceImpl implements PostService {
         if (mode.equals(SortingMode.RECENT.toString().toLowerCase())) {
             pageable = PageRequest.of(page, limit, Sort.by("time").descending());
             posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE,
-                    ModerationStatus.ACCEPTED, generalService.getTimeNow(), pageable);
+                    ModerationStatus.ACCEPTED, utilityService.getTimeNow(), pageable);
         } else if (mode.equals(SortingMode.POPULAR.toString().toLowerCase())) {
             posts = postRepository.getPostsByCommentsCount(IS_ACTIVE, ModerationStatus.ACCEPTED,
-                    generalService.getTimeNow(), pageable);
+                    utilityService.getTimeNow(), pageable);
         } else if (mode.equals(SortingMode.BEST.toString().toLowerCase())) {
             posts = postRepository.getPostsByLikesCount(IS_ACTIVE, ModerationStatus.ACCEPTED,
-                    generalService.getTimeNow(), pageable);
+                    utilityService.getTimeNow(), pageable);
         } else if (mode.equals(SortingMode.EARLY.toString().toLowerCase())) {
             pageable = PageRequest.of(page, limit, Sort.by("time").ascending());
             posts = postRepository.findPostsByIsActiveAndModerationStatusAndTimeBefore(IS_ACTIVE,
-                    ModerationStatus.ACCEPTED, generalService.getTimeNow(), pageable);
+                    ModerationStatus.ACCEPTED, utilityService.getTimeNow(), pageable);
         }
 
         return posts;

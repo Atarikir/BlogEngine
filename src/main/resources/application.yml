@@ -30,15 +30,28 @@ blog:
 captcha.deleteLimitTime: 1
 
 file:
-  uploadDir: ./upload
+  uploadDirImage: ./upload
+  uploadDirAvatar: ./avatars
   maxFileSize: 5_000_000
+  width: 36
+  height: 36
 
 settings:
   code:
-    multiuserMode: "MULTIUSER_MODE"
-    postPremoderation: "POST_PREMODERATION"
-    statisticsIsPublic: "STATISTICS_IS_PUBLIC"
+    multiuserMode: MULTIUSER_MODE
+    postPremoderation: POST_PREMODERATION
+    statisticsIsPublic: STATISTICS_IS_PUBLIC
   value:
-    true: "YES"
-    false: "NO"
+    true: YES
+    false: NO
+
+user:
+  namePattern: ^[а-яА-ЯёЁa-zA-Z0-9]{2,20}$
+  minLengthPassword: 6
+  errorEmail: Этот e-mail уже зарегистрирован
+  errorName: Имя указано неверно
+  errorPassword: Пароль короче 6-ти символов
+  errorCaptcha: Код с картинки введён неверно
+  errorPhoto: Фото слишком большое, нужно не более 5 Мб
+  errorExtension: Файл не формата изображение jpg, png
 

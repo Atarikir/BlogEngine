@@ -7,8 +7,8 @@ import main.model.enums.ModerationStatus;
 import main.repository.PostRepository;
 import main.repository.Tag2PostRepository;
 import main.repository.TagRepository;
-import main.service.GeneralService;
 import main.service.TagService;
+import main.service.UtilityService;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
@@ -19,17 +19,17 @@ import java.util.List;
 @Service
 public class TagServiceImpl implements TagService {
 
-    private final GeneralService generalService;
     private final TagRepository tagRepository;
     private final PostRepository postRepository;
     private final Tag2PostRepository tag2PostRepository;
+    private final UtilityService utilityService;
 
-    public TagServiceImpl(GeneralService generalService, TagRepository tagRepository, PostRepository postRepository,
-                          Tag2PostRepository tag2PostRepository) {
-        this.generalService = generalService;
+    public TagServiceImpl(TagRepository tagRepository, PostRepository postRepository,
+                          Tag2PostRepository tag2PostRepository, UtilityService utilityService) {
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.tag2PostRepository = tag2PostRepository;
+        this.utilityService = utilityService;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class TagServiceImpl implements TagService {
 
         int countByTag = tag2PostRepository.countByTagId(tag.getId());
         int countAllTags = postRepository.countByIsActiveAndModerationStatusAndTimeBefore((byte) 1,
-                ModerationStatus.ACCEPTED, generalService.getTimeNow());
+                ModerationStatus.ACCEPTED, utilityService.getTimeNow());
 
         return (double) countByTag / countAllTags;
     }
