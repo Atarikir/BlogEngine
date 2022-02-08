@@ -1,10 +1,10 @@
 package main.controller;
 
 import main.api.request.AuthRegRequest;
-import main.api.request.LoginRequest;
+import main.api.request.ProfileRequest;
 import main.api.response.AuthCheckResponse;
-import main.api.response.ResultErrorResponse;
 import main.api.response.CaptchaResponse;
+import main.api.response.ResultErrorResponse;
 import main.service.AuthCheckService;
 import main.service.CaptchaService;
 import org.springframework.http.HttpStatus;
@@ -46,8 +46,8 @@ public class ApiAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthCheckResponse> login(@RequestBody LoginRequest loginRequest) {
-        AuthCheckResponse authCheckResponse = authCheckService.getLoginUser(loginRequest);
+    public ResponseEntity<AuthCheckResponse> login(@RequestBody AuthRegRequest authRegRequest) {
+        AuthCheckResponse authCheckResponse = authCheckService.getLoginUser(authRegRequest);
         return new ResponseEntity<>(authCheckResponse, HttpStatus.OK);
     }
 
@@ -60,8 +60,9 @@ public class ApiAuthController {
 
     //not implemented!!!
     @PostMapping("/restore")
-    public ResponseEntity<?> passwordRecovery() {
-        return null;
+    public ResponseEntity<ResultErrorResponse> passwordRecovery(@RequestBody ProfileRequest profileRequest) {
+        ResultErrorResponse resultErrorResponse = authCheckService.passwordRecovery(profileRequest);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
     //not implemented!!!

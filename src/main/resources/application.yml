@@ -5,6 +5,17 @@ spring:
     url: jdbc:mysql://localhost:3306/blogdb?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false&verifyServerCertificate=false
     username: root
     password: testtest
+  mail:
+    host: smtp.yandex.ru
+    username: dmitrijkirilloff
+    password: tco03acer
+    port: 465
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
 
   ## Hibernate Properties
   jpa:

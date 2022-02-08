@@ -1,7 +1,7 @@
 package main.service;
 
 import main.api.request.AuthRegRequest;
-import main.api.request.LoginRequest;
+import main.api.request.ProfileRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.ResultErrorResponse;
 import org.springframework.security.core.Authentication;
@@ -11,8 +11,6 @@ import java.security.Principal;
 
 
 public interface AuthCheckService {
-
-    AuthCheckResponse getLoginUser(LoginRequest loginRequest);
 
     AuthCheckResponse getAuthCheck(Principal principal);
 
@@ -25,4 +23,8 @@ public interface AuthCheckService {
     boolean isUserAuthorize();
 
     main.model.User getAuthorizedUser();
+
+    AuthCheckResponse getLoginUser(AuthRegRequest authRegRequest);
+
+    ResultErrorResponse passwordRecovery(ProfileRequest profileRequest);
 }

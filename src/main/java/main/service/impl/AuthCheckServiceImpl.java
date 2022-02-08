@@ -1,7 +1,7 @@
 package main.service.impl;
 
 import main.api.request.AuthRegRequest;
-import main.api.request.LoginRequest;
+import main.api.request.ProfileRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.ErrorResponse;
 import main.api.response.ResultErrorResponse;
@@ -17,7 +17,10 @@ import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.service.AuthCheckService;
 import main.service.UtilityService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -61,17 +64,20 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     private final AuthenticationManager authenticationManager;
     private final UtilityService utilityService;
     private final GlobalSettingRepository globalSettingRepository;
+    private final JavaMailSender mailSender;
 
     public AuthCheckServiceImpl(UserRepository userRepository,
                                 PostRepository postRepository, CaptchaCodeRepository captchaCodeRepository,
                                 AuthenticationManager authenticationManager,
-                                UtilityService utilityService, GlobalSettingRepository globalSettingRepository) {
+                                UtilityService utilityService, GlobalSettingRepository globalSettingRepository,
+                                JavaMailSender mailSender) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.captchaCodeRepository = captchaCodeRepository;
         this.authenticationManager = authenticationManager;
         this.utilityService = utilityService;
         this.globalSettingRepository = globalSettingRepository;
+        this.mailSender = mailSender;
     }
 
     @Override
@@ -88,17 +94,17 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     }
 
     @Override
-    public AuthCheckResponse getLoginUser(LoginRequest loginRequest) {
-        User currentUser = userRepository.findByEmail(loginRequest.getEmail());
+    public AuthCheckResponse getLoginUser(AuthRegRequest authRegRequest) {
+        User currentUser = userRepository.findByEmail(authRegRequest.getEmail());
 
-        if (currentUser == null || !utilityService.getEncoder().matches(loginRequest.getPassword(),
+        if (currentUser == null || !utilityService.getEncoder().matches(authRegRequest.getPassword(),
                 currentUser.getPassword())) {
             return new AuthCheckResponse();
         }
 
         Authentication auth = authenticationManager
                 .authenticate(
-                        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                        new UsernamePasswordAuthenticationToken(authRegRequest.getEmail(), authRegRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(auth);
 
@@ -179,6 +185,34 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     }
 
     @Override
+    public ResultErrorResponse passwordRecovery(ProfileRequest profileRequest) {
+
+        if (userRepository.findByEmail(profileRequest.getEmail()) == null) {
+            return utilityService.getResultFalse();
+        }
+
+        User user = userRepository.findByEmail(profileRequest.getEmail());
+        String hash = RandomStringUtils.randomAlphanumeric(45);
+        user.setCode(hash);
+        userRepository.save(user);
+
+        String from = "dmitrijkirilloff@yandex.ru";
+        String to = profileRequest.getEmail();
+        String link = "http://localhost:8080/login/change-password/" + hash;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setFrom(from);
+        message.setTo(to);
+        message.setSubject("Восстановление пароля");
+        message.setText(link);
+
+        mailSender.send(message);
+
+        return utilityService.getResultTrue();
+    }
+
+    @Override
     public String getLoggedInUser(Authentication auth) {
         org.springframework.security.core.userdetails.User user =
                 (org.springframework.security.core.userdetails.User) auth.getPrincipal();
@@ -199,7 +233,6 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return getLoggedInUser(authentication);
     }
-
 
     private UserDto getUserDto(String email) {
         User currentUser = userRepository.findByEmail(email);
