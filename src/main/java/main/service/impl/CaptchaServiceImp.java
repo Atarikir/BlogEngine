@@ -7,7 +7,6 @@ import main.model.CaptchaCode;
 import main.repository.CaptchaCodeRepository;
 import main.service.CaptchaService;
 import main.service.UtilityService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +22,6 @@ import java.util.UUID;
 @Transactional
 public class CaptchaServiceImp implements CaptchaService {
 
-    @Value("${captcha.deleteLimitTime}")
-    private int deleteLimitTime;
-
     private final UtilityService utilityService;
     private final CaptchaCodeRepository captchaCodeRepository;
 
@@ -36,13 +32,14 @@ public class CaptchaServiceImp implements CaptchaService {
 
     @Override
     public CaptchaResponse getCaptcha() {
+        final int DELETE_LIMIT_TIME = 1;
         String heading = "data:image/png;base64, ";
         Cage cage = new GCage();
         String token = cage.getTokenGenerator().next();
         String code = generateCode(cage, token);
         String secretCode = UUID.randomUUID().toString();
 
-        captchaCodeRepository.deleteCaptcha(utilityService.getTimeNow().minusHours(deleteLimitTime));
+        captchaCodeRepository.deleteCaptcha(utilityService.getTimeNow().minusHours(DELETE_LIMIT_TIME));
 
         captchaCodeRepository.save(CaptchaCode.builder()
                 .time(utilityService.getTimeNow())

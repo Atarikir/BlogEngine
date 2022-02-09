@@ -58,16 +58,16 @@ public class ApiAuthController {
         return new ResponseEntity<>(authCheckResponse, HttpStatus.OK);
     }
 
-    //not implemented!!!
     @PostMapping("/restore")
-    public ResponseEntity<ResultErrorResponse> passwordRecovery(@RequestBody ProfileRequest profileRequest) {
-        ResultErrorResponse resultErrorResponse = authCheckService.passwordRecovery(profileRequest);
+    public ResponseEntity<ResultErrorResponse> passwordRecovery(@RequestBody ProfileRequest profileRequest,
+                                                                HttpServletRequest servletRequest) {
+        ResultErrorResponse resultErrorResponse = authCheckService.passwordRecovery(profileRequest, servletRequest);
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
-    //not implemented!!!
     @PostMapping("/password")
-    public ResponseEntity<?> changePassword() {
-        return null;
+    public ResponseEntity<ResultErrorResponse> changePassword(@RequestBody AuthRegRequest authRegRequest) {
+        ResultErrorResponse resultErrorResponse = authCheckService.changePassword(authRegRequest);
+        return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 }

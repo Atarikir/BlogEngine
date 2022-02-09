@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -29,10 +30,10 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     long countByUser(User user);
 
     @Query("SELECT SUM(p.viewCount) FROM Post p WHERE p.user = ?1")
-    long getMyViewsCount(User user);
+    Optional<Long> getMyViewsCount(User user);
 
     @Query("SELECT SUM(p.viewCount) FROM Post p")
-    long getAllViewsCount();
+    Optional<Long> getAllViewsCount();
 
     Page<Post> findPostsByIsActiveAndModerationStatusAndTimeBefore(byte isActive, ModerationStatus moderationStatus,
                                                                    LocalDateTime time, Pageable pageable);

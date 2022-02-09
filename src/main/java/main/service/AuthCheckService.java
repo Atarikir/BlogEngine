@@ -26,5 +26,7 @@ public interface AuthCheckService {
 
     AuthCheckResponse getLoginUser(AuthRegRequest authRegRequest);
 
-    ResultErrorResponse passwordRecovery(ProfileRequest profileRequest);
+    ResultErrorResponse passwordRecovery(ProfileRequest profileRequest, HttpServletRequest servletRequest);
+
+    ResultErrorResponse changePassword(AuthRegRequest authRegRequest);
 }

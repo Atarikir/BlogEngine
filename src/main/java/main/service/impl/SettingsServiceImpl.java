@@ -8,6 +8,7 @@ import main.model.Post;
 import main.model.PostVote;
 import main.model.User;
 import main.model.enums.ModerationStatus;
+import main.model.enums.Setting;
 import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
@@ -18,20 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
 public class SettingsServiceImpl implements SettingsService {
-
-    @Value("${settings.code.multiuserMode}")
-    private String multiuserMode;
-
-    @Value("${settings.code.postPremoderation}")
-    private String postPremoderation;
-
-    @Value("${settings.code.statisticsIsPublic}")
-    private String statisticsIsPublic;
 
     @Value("${settings.value.true}")
     private String settingValueTrue;
@@ -58,13 +51,13 @@ public class SettingsServiceImpl implements SettingsService {
 
         for (GlobalSetting setting : getAllGlobalSettings()) {
             boolean value = setting.getValue().equals(settingValueTrue);
-            if (setting.getCode().equals(multiuserMode) && value) {
+            if (setting.getCode().equals(Setting.MULTIUSER_MODE.toString()) && value) {
                 settingsResponse.setMultiuserMode(true);
             }
-            if (setting.getCode().equals(postPremoderation) && value) {
+            if (setting.getCode().equals(Setting.POST_PREMODERATION.toString()) && value) {
                 settingsResponse.setPostPremoderation(true);
             }
-            if (setting.getCode().equals(statisticsIsPublic) && value) {
+            if (setting.getCode().equals(Setting.STATISTICS_IS_PUBLIC.toString()) && value) {
                 settingsResponse.setStatisticsIsPublic(true);
             }
         }
@@ -80,23 +73,27 @@ public class SettingsServiceImpl implements SettingsService {
         if (user.isModerator()) {
 
             for (GlobalSetting globalSetting : getAllGlobalSettings()) {
-                if (settingsRequest.isMultiuserMode() && globalSetting.getCode().equals(multiuserMode)) {
+                if (settingsRequest.isMultiuserMode() &&
+                        globalSetting.getCode().equals(Setting.MULTIUSER_MODE.toString())) {
                     globalSetting.setValue(settingValueTrue);
-                } else if (!settingsRequest.isMultiuserMode() && globalSetting.getCode().equals(multiuserMode)) {
+                } else if (!settingsRequest.isMultiuserMode() &&
+                        globalSetting.getCode().equals(Setting.MULTIUSER_MODE.toString())) {
                     globalSetting.setValue(settingValueFalse);
                 }
 
-                if (settingsRequest.isPostPremoderation() && globalSetting.getCode().equals(postPremoderation)) {
+                if (settingsRequest.isPostPremoderation() &&
+                        globalSetting.getCode().equals(Setting.POST_PREMODERATION.toString())) {
                     globalSetting.setValue(settingValueTrue);
                 } else if (!settingsRequest.isPostPremoderation() &&
-                        globalSetting.getCode().equals(postPremoderation)) {
+                        globalSetting.getCode().equals(Setting.POST_PREMODERATION.toString())) {
                     globalSetting.setValue(settingValueFalse);
                 }
 
-                if (settingsRequest.isStatisticsIsPublic() && globalSetting.getCode().equals(statisticsIsPublic)) {
+                if (settingsRequest.isStatisticsIsPublic() &&
+                        globalSetting.getCode().equals(Setting.STATISTICS_IS_PUBLIC.toString())) {
                     globalSetting.setValue(settingValueTrue);
                 } else if (!settingsRequest.isStatisticsIsPublic() &&
-                        globalSetting.getCode().equals(statisticsIsPublic)) {
+                        globalSetting.getCode().equals(Setting.STATISTICS_IS_PUBLIC.toString())) {
                     globalSetting.setValue(settingValueFalse);
                 }
 
@@ -107,24 +104,25 @@ public class SettingsServiceImpl implements SettingsService {
 
     @Override
     public StatisticsResponse getMyStats(Principal principal) {
-
         final byte IS_ACTIVE = 1;
         User user = userRepository.findByEmail(principal.getName());
+        LocalDateTime timeOfFirstPost = postRepository.getMyFirstPublicationTime(user);
         List<Post> postList = postRepository.findPostsByIsActiveAndModerationStatusAndUser(IS_ACTIVE,
                 ModerationStatus.ACCEPTED, user);
 
         long postCount = postRepository.countByUser(user);
         long likesCount = getCountVotes(postList, (byte) 1);
         long dislikesCount = getCountVotes(postList, (byte) -1);
-        long viewsCount = postRepository.getMyViewsCount(user);
-        long firstPublication = postRepository.getMyFirstPublicationTime(user).toEpochSecond(ZoneOffset.UTC);
+        long viewsCount = postRepository.getMyViewsCount(user).orElse(0L);
+        long firstPublication = timeOfFirstPost == null ? 0 : timeOfFirstPost.toEpochSecond(ZoneOffset.UTC);
 
         return getStatisticsResponse(postCount, likesCount, dislikesCount, viewsCount, firstPublication);
     }
 
     @Override
     public StatisticsResponse getStatisticsAllPosts(Principal principal) {
-        GlobalSetting globalSetting = globalSettingRepository.findByCode(statisticsIsPublic);
+        GlobalSetting globalSetting = globalSettingRepository.findByCode(Setting.STATISTICS_IS_PUBLIC.toString());
+        LocalDateTime timeOfFirstPost = postRepository.getFirstPublicationTime();
 
         if (principal != null) {
             User user = userRepository.findByEmail(principal.getName());
@@ -136,8 +134,8 @@ public class SettingsServiceImpl implements SettingsService {
         long postCount = postRepository.count();
         long likesCount = postVoteRepository.countAllByValue((byte) 1);
         long dislikesCount = postVoteRepository.countAllByValue((byte) -1);
-        long viewsCount = postRepository.getAllViewsCount();
-        long firstPublication = postRepository.getFirstPublicationTime().toEpochSecond(ZoneOffset.UTC);
+        long viewsCount = postRepository.getAllViewsCount().orElse(0L);
+        long firstPublication = timeOfFirstPost == null ? 0 : timeOfFirstPost.toEpochSecond(ZoneOffset.UTC);
 
         return getStatisticsResponse(postCount, likesCount, dislikesCount, viewsCount, firstPublication);
 

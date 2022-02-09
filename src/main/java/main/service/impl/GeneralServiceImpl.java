@@ -13,6 +13,7 @@ import main.exceptions.UnauthorizedException;
 import main.model.Post;
 import main.model.PostComment;
 import main.model.User;
+import main.model.enums.Message;
 import main.model.enums.ModerationStatus;
 import main.repository.PostCommentRepository;
 import main.repository.PostRepository;
@@ -53,21 +54,6 @@ public class GeneralServiceImpl implements GeneralService {
     @Value("${user.minLengthPassword}")
     private int minLengthPassword;
 
-    @Value("${user.errorEmail}")
-    private String errorEmail;
-
-    @Value("${user.errorName}")
-    private String errorName;
-
-    @Value("${user.errorPassword}")
-    private String errorPassword;
-
-    @Value("${user.errorPhoto}")
-    private String errorPhoto;
-
-    @Value("${user.errorExtension}")
-    private String errorExtension;
-
     @Value("${file.width}")
     private int photoWidth;
 
@@ -97,10 +83,10 @@ public class GeneralServiceImpl implements GeneralService {
         }
 
         if (!fileSuffix.equalsIgnoreCase("jpg") && !fileSuffix.equalsIgnoreCase("png")) {
-            throw new ImageBadRequestException(errorExtension);
+            throw new ImageBadRequestException(Message.ERROR_EXTENSION.getText());
         }
 
-        String path = createPath(fileSuffix);
+        String path = createPath(fileSuffix, uploadDirImage);
         File destFile = new File(path);
 
         if (destFile.mkdirs()) {
@@ -176,7 +162,7 @@ public class GeneralServiceImpl implements GeneralService {
         if (name == null || name.isEmpty() || !name.matches(namePattern)) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .name(errorName)
+                            .name(Message.ERROR_NAME.getText())
                             .build()
             );
         } else {
@@ -186,7 +172,7 @@ public class GeneralServiceImpl implements GeneralService {
         if (!email.equals(user.getEmail()) && userRepository.findByEmail(email) != null) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .email(errorEmail)
+                            .email(Message.ERROR_EMAIL.getText())
                             .build());
         } else {
             user.setEmail(email);
@@ -197,7 +183,7 @@ public class GeneralServiceImpl implements GeneralService {
         } else if (password.length() < minLengthPassword) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .password(errorPassword)
+                            .password(Message.ERROR_PASSWORD.getText())
                             .build());
         } else {
             user.setPassword(utilityService.encodeBCrypt(password));
@@ -217,7 +203,7 @@ public class GeneralServiceImpl implements GeneralService {
         if (!fileSuffix.equalsIgnoreCase("jpg") && !fileSuffix.equalsIgnoreCase("png")) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .photo(errorExtension)
+                            .photo(Message.ERROR_EXTENSION.getText())
                             .build()
             );
         }
@@ -225,7 +211,7 @@ public class GeneralServiceImpl implements GeneralService {
         if (photo.getSize() > maxFileSize) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .photo(errorPhoto)
+                            .photo(Message.ERROR_PHOTO.getText())
                             .build()
             );
         } else {
@@ -237,7 +223,7 @@ public class GeneralServiceImpl implements GeneralService {
 
     private String uploadAvatar(MultipartFile photo) throws IOException {
         String fileSuffix = getFileSuffix(photo);
-        String path = createPath(fileSuffix);
+        String path = createPath(fileSuffix, uploadDirAvatar);
         File destFile = new File(path);
 
         if (destFile.mkdirs()) {
@@ -255,10 +241,10 @@ public class GeneralServiceImpl implements GeneralService {
                 .substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
     }
 
-    private String createPath(String fileSuffix) {
+    private String createPath(String fileSuffix, String uploadDir) {
         String generatedString = RandomStringUtils.randomAlphabetic(6).toLowerCase();
         String newFileName = RandomStringUtils.randomNumeric(5) + (".") + fileSuffix;
-        return uploadDirAvatar +
+        return uploadDir +
                 File.separator +
                 generatedString.substring(0, 2) +
                 File.separator +
@@ -270,7 +256,6 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     private BufferedImage resizePhoto(BufferedImage photo) {
-
         return Scalr.resize(photo,
                 Scalr.Method.QUALITY,
                 Scalr.Mode.FIT_EXACT,

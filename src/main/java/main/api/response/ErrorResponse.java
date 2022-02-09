@@ -16,4 +16,5 @@ public class ErrorResponse {
     private String text;
     private String image;
     private String photo;
+    private String code;
 }

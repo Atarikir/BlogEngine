@@ -10,7 +10,9 @@ import main.exceptions.NoFoundException;
 import main.model.CaptchaCode;
 import main.model.GlobalSetting;
 import main.model.User;
+import main.model.enums.Message;
 import main.model.enums.ModerationStatus;
+import main.model.enums.Setting;
 import main.repository.CaptchaCodeRepository;
 import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
@@ -37,26 +39,17 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     @Value("${settings.value.false}")
     private String settingValueFalse;
 
-    @Value("${settings.code.multiuserMode}")
-    private String multiuserMode;
-
     @Value("${user.namePattern}")
     private String namePattern;
 
     @Value("${user.minLengthPassword}")
     private int minLengthPassword;
 
-    @Value("${user.errorEmail}")
-    private String errorEmail;
+    @Value("${password.linkPrefix}")
+    private String linkPrefix;
 
-    @Value("${user.errorName}")
-    private String errorName;
-
-    @Value("${user.errorPassword}")
-    private String errorPassword;
-
-    @Value("${user.errorCaptcha}")
-    private String errorCaptcha;
+    @Value("${password.lengthHash}")
+    private int lengthHash;
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -133,10 +126,8 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     @Override
     public ResultErrorResponse createUser(AuthRegRequest authRegRequest) {
         String name = authRegRequest.getName();
-        String password = authRegRequest.getPassword();
-        CaptchaCode captchaCodeDB = captchaCodeRepository.findByCode(authRegRequest.getCaptcha());
         User user = userRepository.findByEmail(authRegRequest.getEmail());
-        GlobalSetting globalSetting = globalSettingRepository.findByCode(multiuserMode);
+        GlobalSetting globalSetting = globalSettingRepository.findByCode(Setting.MULTIUSER_MODE.toString());
 
         if (globalSetting.getValue().equals(settingValueFalse)) {
             throw new NoFoundException();
@@ -145,28 +136,29 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         if (user != null) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .email(errorEmail)
+                            .email(Message.ERROR_EMAIL.getText())
                             .build());
         }
 
         if (!name.matches(namePattern)) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .name(errorName)
+                            .name(Message.ERROR_NAME.getText())
                             .build());
         }
 
-        if (password.length() < minLengthPassword) {
+        if (checkPassword(authRegRequest)) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .password(errorPassword)
-                            .build());
+                            .password(Message.ERROR_PASSWORD.getText())
+                            .build()
+            );
         }
 
-        if (captchaCodeDB == null || !captchaCodeDB.getSecretCode().equals(authRegRequest.getCaptchaSecret())) {
+        if (checkCaptcha(authRegRequest)) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
-                            .captcha(errorCaptcha)
+                            .captcha(Message.ERROR_CAPTCHA.getText())
                             .build()
             );
         }
@@ -185,20 +177,21 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     }
 
     @Override
-    public ResultErrorResponse passwordRecovery(ProfileRequest profileRequest) {
+    public ResultErrorResponse passwordRecovery(ProfileRequest profileRequest, HttpServletRequest servletRequest) {
 
         if (userRepository.findByEmail(profileRequest.getEmail()) == null) {
             return utilityService.getResultFalse();
         }
 
         User user = userRepository.findByEmail(profileRequest.getEmail());
-        String hash = RandomStringUtils.randomAlphanumeric(45);
+        String hash = RandomStringUtils.randomAlphanumeric(lengthHash);
         user.setCode(hash);
         userRepository.save(user);
 
         String from = "dmitrijkirilloff@yandex.ru";
         String to = profileRequest.getEmail();
-        String link = "http://localhost:8080/login/change-password/" + hash;
+        String link = servletRequest.getScheme() + "://" + servletRequest.getServerName() + ":" +
+                servletRequest.getServerPort() + linkPrefix + hash;
 
         SimpleMailMessage message = new SimpleMailMessage();
 
@@ -208,6 +201,39 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         message.setText(link);
 
         mailSender.send(message);
+
+        return utilityService.getResultTrue();
+    }
+
+    @Override
+    public ResultErrorResponse changePassword(AuthRegRequest authRegRequest) {
+        User user = userRepository.findUserByCode(authRegRequest.getCode());
+
+        if (user == null) {
+            return utilityService.errorsRequest(
+                    ErrorResponse.builder()
+                            .code(Message.ERROR_CODE.getText())
+                            .build());
+        }
+
+        if (checkPassword(authRegRequest)) {
+            return utilityService.errorsRequest(
+                    ErrorResponse.builder()
+                            .password(Message.ERROR_PASSWORD.getText())
+                            .build()
+            );
+        }
+
+        if (checkCaptcha(authRegRequest)) {
+            return utilityService.errorsRequest(
+                    ErrorResponse.builder()
+                            .captcha(Message.ERROR_CAPTCHA.getText())
+                            .build()
+            );
+        }
+
+        user.setPassword(utilityService.encodeBCrypt(authRegRequest.getPassword()));
+        userRepository.save(user);
 
         return utilityService.getResultTrue();
     }
@@ -252,5 +278,14 @@ public class AuthCheckServiceImpl implements AuthCheckService {
         byte isActive = 1;
         ModerationStatus moderationStatus = ModerationStatus.NEW;
         return postRepository.countByIsActiveAndModerationStatus(isActive, moderationStatus);
+    }
+
+    private boolean checkPassword(AuthRegRequest authRegRequest) {
+        return authRegRequest.getPassword().length() < minLengthPassword;
+    }
+
+    private boolean checkCaptcha(AuthRegRequest authRegRequest) {
+        CaptchaCode captchaCodeDB = captchaCodeRepository.findByCode(authRegRequest.getCaptcha());
+        return captchaCodeDB == null || !captchaCodeDB.getSecretCode().equals(authRegRequest.getCaptchaSecret());
     }
 }

@@ -6,6 +6,7 @@ import main.api.response.*;
 import main.exceptions.NoFoundException;
 import main.model.*;
 import main.model.enums.ModerationStatus;
+import main.model.enums.Setting;
 import main.model.enums.SortingMode;
 import main.repository.*;
 import main.service.AuthCheckService;
@@ -34,9 +35,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
-
-    @Value("${settings.code.postPremoderation}")
-    private String postPremoderation;
 
     @Value("${settings.value.true}")
     private String settingValueTrue;
@@ -203,7 +201,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResultErrorResponse createPost(Principal principal, CreatePostRequest createPostRequest) {
-        GlobalSetting globalSetting = globalSettingRepository.findByCode(postPremoderation);
+        GlobalSetting globalSetting = globalSettingRepository.findByCode(Setting.POST_PREMODERATION.toString());
         User user = userRepository.findByEmail(principal.getName());
         ModerationStatus moderationStatus = null;
 
@@ -306,13 +304,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResultErrorResponse likePost(PostModerationRequest postModerationRequest, Principal principal) {
-//        if (principal == null) {
-//            throw new UnauthorizedException();
-//        }
-
-//        if (!authCheckService.isUserAuthorize()) {
-//            throw new UnauthorizedException();
-//        }
 
         String email = principal.getName();
         int id = postModerationRequest.getPostId();
@@ -411,10 +402,7 @@ public class PostServiceImpl implements PostService {
     private Page<Post> getSortedPostsForModeration(int offset, int limit, String status) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = null;
-        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-//        @NotNull
-//        int userId = userRepository.findByEmail(authCheckService.getLoggedInUser(auth)).getId();
         @NotNull
         int userId = authCheckService.getAuthorizedUser().getId();
 
@@ -435,7 +423,6 @@ public class PostServiceImpl implements PostService {
     private Page<Post> getSortedMyPosts(int offset, int limit, String status) {
         Pageable pageable = getPageable(offset, limit);
         Page<Post> posts = null;
-        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = authCheckService.getAuthorizedUser();
 
         if (status.equals("inactive")) {
