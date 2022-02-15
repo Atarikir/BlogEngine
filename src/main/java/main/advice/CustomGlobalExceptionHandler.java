@@ -4,7 +4,6 @@ import main.api.response.ErrorResponse;
 import main.api.response.ResultErrorResponse;
 import main.exceptions.ImageBadRequestException;
 import main.exceptions.TextCommentBadRequestException;
-import main.exceptions.UnauthorizedException;
 import main.service.UtilityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +18,6 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
 
     public CustomGlobalExceptionHandler(UtilityService utilityService) {
         this.utilityService = utilityService;
-    }
-
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Object> unauthorizedException() {
-
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(TextCommentBadRequestException.class)

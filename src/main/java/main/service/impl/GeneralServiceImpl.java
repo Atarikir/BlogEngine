@@ -6,10 +6,7 @@ import main.api.request.ProfileRequest;
 import main.api.response.CommentDto;
 import main.api.response.ErrorResponse;
 import main.api.response.ResultErrorResponse;
-import main.exceptions.BedRequestException;
-import main.exceptions.ImageBadRequestException;
-import main.exceptions.TextCommentBadRequestException;
-import main.exceptions.UnauthorizedException;
+import main.exceptions.*;
 import main.model.Post;
 import main.model.PostComment;
 import main.model.User;
@@ -155,8 +152,12 @@ public class GeneralServiceImpl implements GeneralService {
         String password = profileRequest.getPassword();
 
         if (profileRequest.getRemovePhoto() == 1) {
-            Files.delete(Path.of("." + user.getPhoto()));
-            user.setPhoto("");
+            if (user.getPhoto() != null) {
+                Files.delete(Path.of("." + user.getPhoto()));
+                user.setPhoto(null);
+            } else {
+                throw new NoFoundException();
+            }
         }
 
         if (name == null || name.isEmpty() || !name.matches(namePattern)) {
@@ -227,8 +228,7 @@ public class GeneralServiceImpl implements GeneralService {
         File destFile = new File(path);
 
         if (destFile.mkdirs()) {
-            BufferedImage bufferedImage = ImageIO.read(photo.getInputStream());
-            BufferedImage resizeAvatar = resizePhoto(bufferedImage);
+            BufferedImage resizeAvatar = resizePhoto(photo);
             ImageIO.write(resizeAvatar, fileSuffix, destFile);
         }
 
@@ -255,9 +255,11 @@ public class GeneralServiceImpl implements GeneralService {
                 newFileName;
     }
 
-    private BufferedImage resizePhoto(BufferedImage photo) {
-        return Scalr.resize(photo,
-                Scalr.Method.QUALITY,
+    private BufferedImage resizePhoto(MultipartFile photo) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(photo.getInputStream());
+
+        return Scalr.resize(bufferedImage,
+                Scalr.Method.ULTRA_QUALITY,
                 Scalr.Mode.FIT_EXACT,
                 photoWidth,
                 photoHeight,

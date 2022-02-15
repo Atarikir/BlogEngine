@@ -246,11 +246,6 @@ public class AuthCheckServiceImpl implements AuthCheckService {
     }
 
     @Override
-    public boolean isUserAuthorize() {
-        return userRepository.findByEmail(getLoggedUserName()) != null;
-    }
-
-    @Override
     public main.model.User getAuthorizedUser() {
         return userRepository.findByEmail(getLoggedUserName());
     }

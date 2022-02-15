@@ -16,6 +16,10 @@ spring:
           auth: true
           ssl:
             enable: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
   ## Hibernate Properties
   jpa:
@@ -35,7 +39,7 @@ blog:
   phone: +7 961 500-94-94
   email: mitkiril@gmail.com
   copyright: Дмитрий Кириллов
-  copyrightFrom: 2021
+  copyrightFrom: 2019
 
 file:
   uploadDirImage: ./upload

@@ -20,8 +20,6 @@ public interface AuthCheckService {
 
     String getLoggedInUser(Authentication auth);
 
-    boolean isUserAuthorize();
-
     main.model.User getAuthorizedUser();
 
     AuthCheckResponse getLoginUser(AuthRegRequest authRegRequest);

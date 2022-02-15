@@ -18,7 +18,7 @@
             <column name="email" value="mitkiril@gmail.com"/>
             <column name="password" value="$2y$12$K3WwpsFEIHMXcIbIPkbE4OEJwFW7/2yUxQDtBGwp6bkspQopvQYVa"/>
             <column name="code" value="111"/>
-            <column name="photo" value="/home/pandora/Pictures/мерс-аватар-2.jpg"/>
+            <column name="photo"/>
         </insert>
 
         <insert tableName="users">
@@ -29,7 +29,7 @@
             <column name="email" value="den@mail.ru"/>
             <column name="password" value="$2y$12$fHnLJx9vKT8zorrVqRjWounr78eXka.rQmVdB4JauklYHOEywVoqu"/>
             <column name="code" value="222"/>
-            <column name="photo" value="/home/denis/Pictures/Ford-Mustang.jpg"/>
+            <column name="photo"/>
         </insert>
 
         <insert tableName="users">
