@@ -2,13 +2,13 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/blogdb?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false&verifyServerCertificate=false
-    username: root
-    password: testtest
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   mail:
     host: smtp.yandex.ru
-    username: dmitrijkirilloff
-    password: tco03acer
+    username: ${EMAIL_USER_NAME}
+    password: ${EMAIL_PASSWORD}
     port: 465
     properties:
       mail:
@@ -60,3 +60,6 @@ settings:
   value:
     true: YES
     false: NO
+
+server:
+  port: ${APP_PORT}

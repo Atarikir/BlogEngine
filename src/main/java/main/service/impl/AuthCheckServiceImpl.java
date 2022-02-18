@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
+import java.util.Objects;
 
 @Service
 public class AuthCheckServiceImpl implements AuthCheckService {
@@ -81,7 +82,7 @@ public class AuthCheckServiceImpl implements AuthCheckService {
 
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
         authCheckResponse.setResult(true);
-        authCheckResponse.setUser(getUserDto(principal.getName()));
+        authCheckResponse.setUser(getUserDto(Objects.requireNonNull(principal).getName()));
 
         return authCheckResponse;
     }

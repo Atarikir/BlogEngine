@@ -20,6 +20,7 @@ import main.service.UtilityService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -170,13 +171,25 @@ public class GeneralServiceImpl implements GeneralService {
             user.setName(name);
         }
 
+        if (email == null) {
+            return utilityService.errorsRequest(
+                    ErrorResponse.builder()
+                            .email("Поле не заполнено. Введите ваш email")
+                            .build()
+            );
+        }
+
         if (!email.equals(user.getEmail()) && userRepository.findByEmail(email) != null) {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .email(Message.ERROR_EMAIL.getText())
-                            .build());
+                            .build()
+            );
+        } else if (email.equals(user.getEmail())) {
+            user.setEmail(email);
         } else {
             user.setEmail(email);
+            SecurityContextHolder.clearContext();
         }
 
         if (password == null) {
@@ -185,7 +198,8 @@ public class GeneralServiceImpl implements GeneralService {
             return utilityService.errorsRequest(
                     ErrorResponse.builder()
                             .password(Message.ERROR_PASSWORD.getText())
-                            .build());
+                            .build()
+            );
         } else {
             user.setPassword(utilityService.encodeBCrypt(password));
         }

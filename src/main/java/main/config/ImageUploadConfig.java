@@ -9,7 +9,15 @@ public class ImageUploadConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
-                .addResourceHandler("/upload/**")
-                .addResourceLocations("file:upload/");
+                .addResourceHandler("/upload/**", "/js/**", "/css/**", "/fonts/**", "/img/**",
+                        "/templates/**", "/post/upload/**", "/edit/upload/**", "/avatars/**")
+                .addResourceLocations(
+                        "file:upload/",
+                        "file:avatars/",
+                        "classpath:static/js/",
+                        "classpath:static/css/",
+                        "classpath:static/fonts/",
+                        "classpath:static/img/",
+                        "classpath:resources/templates/");
     }
 }
