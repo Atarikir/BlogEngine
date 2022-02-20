@@ -1,5 +1,8 @@
 package main.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import lombok.extern.slf4j.Slf4j;
 import main.api.request.CreateCommentRequest;
 import main.api.request.PostModerationRequest;
 import main.api.request.ProfileRequest;
@@ -17,7 +20,6 @@ import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.service.GeneralService;
 import main.service.UtilityService;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,20 +30,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.Principal;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class GeneralServiceImpl implements GeneralService {
-
-    @Value("${file.uploadDirImage}")
-    private String uploadDirImage;
-
-    @Value("${file.uploadDirAvatar}")
-    private String uploadDirAvatar;
 
     @Value("${file.maxFileSize}")
     private int maxFileSize;
@@ -62,37 +58,15 @@ public class GeneralServiceImpl implements GeneralService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final UtilityService utilityService;
+    private final Cloudinary cloudinary;
 
     public GeneralServiceImpl(PostCommentRepository postCommentRepository, PostRepository postRepository,
-                              UserRepository userRepository, UtilityService utilityService) {
+                              UserRepository userRepository, UtilityService utilityService, Cloudinary cloudinary) {
         this.postCommentRepository = postCommentRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.utilityService = utilityService;
-    }
-
-    @Override
-    public Object uploadImage(MultipartFile image) throws IOException {
-        String textErrorSize = "Размер файла превышает допустимый размер";
-        String fileSuffix = getFileSuffix(image);
-
-        if (image.getSize() > maxFileSize) {
-            throw new ImageBadRequestException(textErrorSize);
-        }
-
-        if (!fileSuffix.equalsIgnoreCase("jpg") && !fileSuffix.equalsIgnoreCase("png")) {
-            throw new ImageBadRequestException(Message.ERROR_EXTENSION.getText());
-        }
-
-        String path = createPath(fileSuffix, uploadDirImage);
-        File destFile = new File(path);
-
-        if (destFile.mkdirs()) {
-            BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
-            ImageIO.write(bufferedImage, fileSuffix, destFile);
-        }
-
-        return path.substring(1);
+        this.cloudinary = cloudinary;
     }
 
     @Override
@@ -154,7 +128,9 @@ public class GeneralServiceImpl implements GeneralService {
 
         if (profileRequest.getRemovePhoto() == 1) {
             if (user.getPhoto() != null) {
-                Files.delete(Path.of("." + user.getPhoto()));
+                String publicIdCloudImage = user.getPhoto().substring(60, 80);
+                log.info(publicIdCloudImage);
+                cloudinary.uploader().destroy(publicIdCloudImage, ObjectUtils.emptyMap());
                 user.setPhoto(null);
             } else {
                 throw new NoFoundException();
@@ -236,37 +212,68 @@ public class GeneralServiceImpl implements GeneralService {
         return editMyProfile(profileRequest, principal);
     }
 
-    private String uploadAvatar(MultipartFile photo) throws IOException {
-        String fileSuffix = getFileSuffix(photo);
-        String path = createPath(fileSuffix, uploadDirAvatar);
-        File destFile = new File(path);
+    @Override
+    public Object uploadImage(MultipartFile image) {
+        String textErrorSize = "Размер файла превышает допустимый размер";
+        String fileSuffix = getFileSuffix(image);
 
-        if (destFile.mkdirs()) {
-            BufferedImage resizeAvatar = resizePhoto(photo);
-            ImageIO.write(resizeAvatar, fileSuffix, destFile);
+        if (image.getSize() > maxFileSize) {
+            throw new ImageBadRequestException(textErrorSize);
         }
 
-        return path.substring(1);
+        if (!fileSuffix.equalsIgnoreCase("jpg") && !fileSuffix.equalsIgnoreCase("png")) {
+            throw new ImageBadRequestException(Message.ERROR_EXTENSION.getText());
+        }
+
+        try {
+            File uploadedFile = convertMultiPartToFile(image);
+            return getUploadResult(uploadedFile).get("url").toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String uploadAvatar(MultipartFile photo) {
+
+        try {
+            File uploadedFile = resizeMultiPartToFile(photo);
+            return getUploadResult(uploadedFile).get("url").toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map getUploadResult(File uploadedFile) throws IOException {
+
+        Map uploadResult = cloudinary.uploader().upload(uploadedFile, ObjectUtils.emptyMap());
+
+        if (uploadedFile.delete()) {
+            log.info("File successfully deleted");
+        } else
+            log.info("File doesn't exist");
+        return uploadResult;
+    }
+
+    private File convertMultiPartToFile(MultipartFile file) throws IOException {
+        String fileSuffix = getFileSuffix(file);
+        File convFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
+        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+        ImageIO.write(bufferedImage, fileSuffix, convFile);
+        return convFile;
+    }
+
+    private File resizeMultiPartToFile(MultipartFile file) throws IOException {
+        String fileSuffix = getFileSuffix(file);
+        File convFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
+        BufferedImage resizeAvatar = resizePhoto(file);
+        ImageIO.write(resizeAvatar, fileSuffix, convFile);
+        return convFile;
     }
 
     private String getFileSuffix(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
         return Objects.requireNonNull(originalFileName)
                 .substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
-    }
-
-    private String createPath(String fileSuffix, String uploadDir) {
-        String generatedString = RandomStringUtils.randomAlphabetic(6).toLowerCase();
-        String newFileName = RandomStringUtils.randomNumeric(5) + (".") + fileSuffix;
-        return uploadDir +
-                File.separator +
-                generatedString.substring(0, 2) +
-                File.separator +
-                generatedString.substring(2, 4) +
-                File.separator +
-                generatedString.substring(4) +
-                File.separator +
-                newFileName;
     }
 
     private BufferedImage resizePhoto(MultipartFile photo) throws IOException {

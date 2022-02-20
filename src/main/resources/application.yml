@@ -42,8 +42,6 @@ blog:
   copyrightFrom: 2019
 
 file:
-  uploadDirImage: ./upload
-  uploadDirAvatar: ./avatars
   maxFileSize: 5_000_000
   width: 36
   height: 36
@@ -63,3 +61,9 @@ settings:
 
 server:
   port: ${APP_PORT}
+
+#Cloudinary configuration
+cloud:
+  name: ${CLOUD_NAME}
+  key: ${CLOUD_KEY}
+  secret: ${CLOUD_SECRET}
