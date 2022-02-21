@@ -2,7 +2,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${DB_URL}
+    url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/blogdb?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false&verifyServerCertificate=false}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
   mail:
@@ -32,6 +32,9 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     #enable: false
 
+server:
+  port: ${PORT:8080}
+
 ##init config
 blog:
   title: DevPub
@@ -58,9 +61,6 @@ settings:
   value:
     true: YES
     false: NO
-
-server:
-  port: ${APP_PORT}
 
 #Cloudinary configuration
 cloud:
