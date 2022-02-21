@@ -64,6 +64,6 @@ settings:
 
 #Cloudinary configuration
 cloud:
-  name: atarikir #${CLOUD_NAME}
-  key: 428158394967337 #${CLOUD_KEY}
-  secret: mtNViiYD4NgAd0jqeX8lgBDKupE #${CLOUD_SECRET}
+  name: ${CLOUD_NAME}
+  key: ${CLOUD_KEY}
+  secret: ${CLOUD_SECRET}
