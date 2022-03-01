@@ -1,5 +1,6 @@
 package main.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import main.api.request.CreatePostRequest;
 import main.api.request.PostModerationRequest;
 import main.api.response.*;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class PostServiceImpl implements PostService {
 
@@ -203,7 +205,7 @@ public class PostServiceImpl implements PostService {
     public ResultErrorResponse createPost(Principal principal, CreatePostRequest createPostRequest) {
         GlobalSetting globalSetting = globalSettingRepository.findByCode(Setting.POST_PREMODERATION.toString());
         User user = userRepository.findByEmail(principal.getName());
-        ModerationStatus moderationStatus = null;
+        ModerationStatus moderationStatus;
 
         if (globalSetting.getValue().equals(settingValueTrue) && !user.isModerator()) {
             moderationStatus = ModerationStatus.NEW;
@@ -304,26 +306,24 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResultErrorResponse likePost(PostModerationRequest postModerationRequest, Principal principal) {
-
-        String email = principal.getName();
-        int id = postModerationRequest.getPostId();
+        int postId = postModerationRequest.getPostId();
         byte valueVote = 1;
 
-        return addValueVote(email, id, valueVote);
+        return addValueVote(postId, valueVote, principal);
     }
 
     @Override
     public ResultErrorResponse dislikePost(PostModerationRequest postModerationRequest, Principal principal) {
-        String email = principal.getName();
-        int id = postModerationRequest.getPostId();
+        int postId = postModerationRequest.getPostId();
         byte valueVote = -1;
-        return addValueVote(email, id, valueVote);
+
+        return addValueVote(postId, valueVote, principal);
     }
 
-    private ResultErrorResponse addValueVote(String email, int id, byte valueVote) {
+    private ResultErrorResponse addValueVote(int postId, byte valueVote, Principal principal) {
 
-        User currentUser = userRepository.findByEmail(email);
-        Post currentPost = postRepository.findById(id);
+        User currentUser = userRepository.findByEmail(principal.getName());
+        Post currentPost = postRepository.findById(postId);
         PostVote postVote = postVoteRepository.findByUserAndPost(currentUser, currentPost);
         ResultErrorResponse resultErrorResponse;
 
