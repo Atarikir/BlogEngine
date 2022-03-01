@@ -98,7 +98,6 @@ public class ApiPostController {
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
-    //to do - if the user is not logged in, issue a 401 error!!!
     @PostMapping("/like")
     @PreAuthorize("hasAnyAuthority('user:write')")
     public ResponseEntity<ResultErrorResponse> likePost(@RequestBody PostModerationRequest postModerationRequest,
@@ -107,7 +106,6 @@ public class ApiPostController {
         return new ResponseEntity<>(resultErrorResponse, HttpStatus.OK);
     }
 
-    //to do - if the user is not logged in, issue a 401 error!!!
     @PostMapping("/dislike")
     @PreAuthorize("hasAnyAuthority('user:write')")
     public ResponseEntity<ResultErrorResponse> dislikePost(@RequestBody PostModerationRequest postModerationRequest,
